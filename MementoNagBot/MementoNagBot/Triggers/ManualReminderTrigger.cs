@@ -6,10 +6,10 @@ using Microsoft.Extensions.Logging;
 
 namespace MementoNagBot.Triggers;
 
-public static class ManualReminderTrigger
+public class ManualReminderTrigger
 {
 	[FunctionName("ReminderTrigger")]
-	public static async Task<string> RunAsync(
+	public async Task<string> RunAsync(
 		[HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req, ILogger log)
 	{
 		return "Hello World!";
