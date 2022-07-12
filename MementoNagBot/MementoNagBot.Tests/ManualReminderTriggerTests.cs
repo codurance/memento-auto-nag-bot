@@ -12,8 +12,9 @@ public class ManualReminderTriggerTests
 		[Fact]
 		public async Task ThenItReturnsHelloWorld()
 		{
+			ManualReminderTrigger trigger = new();
 			HttpRequest req = new DefaultHttpRequest(new DefaultHttpContext());
-			string? res = await ManualReminderTrigger.RunAsync(req, null);
+			string? res = await trigger.RunAsync(req, null);
 			res.ShouldBe("Hello World!");
 		}
 	}
