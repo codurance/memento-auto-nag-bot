@@ -1,15 +1,18 @@
 using System.Threading.Tasks;
+using MementoNagBot.Options;
+using Microsoft.Extensions.Options;
 using SlackAPI;
 
 namespace MementoNagBot.Wrappers;
 
 public class SlackClientWrapper: ISlackClient
 {
+	private readonly IOptions<SlackOptions> _slackOptions;
 	private readonly SlackTaskClient _client;
-	public SlackClientWrapper(SlackTaskClient client)
+	public SlackClientWrapper(IOptions<SlackOptions> slackOptions)
 	{
-		
-		_client = client;
+		_slackOptions = slackOptions;
+		_client = new(_slackOptions.Value.SlackApiToken);
 	}
 
 

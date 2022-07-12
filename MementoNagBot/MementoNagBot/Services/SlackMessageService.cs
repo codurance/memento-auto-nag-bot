@@ -1,6 +1,8 @@
 using System;
 using System.Threading.Tasks;
+using MementoNagBot.Options;
 using MementoNagBot.Wrappers;
+using Microsoft.Extensions.Options;
 using SlackAPI;
 
 namespace MementoNagBot.Services;
@@ -8,16 +10,17 @@ namespace MementoNagBot.Services;
 public class SlackMessageService
 {
 	private readonly ISlackClient _client;
-	private const string BotChannel = "#botspam"; // TODO - Move into config?
+	private readonly IOptions<BotOptions> _botOptions;
 
-	public SlackMessageService(ISlackClient client)
+	public SlackMessageService(ISlackClient client, IOptions<BotOptions> botOptions)
 	{
 		_client = client;
+		_botOptions = botOptions;
 	}
 	
 	public async Task SendMessageToBotChannel(string messageText)
 	{
-		PostMessageResponse res = await _client.PostMessageAsync(BotChannel, messageText);
+		PostMessageResponse res = await _client.PostMessageAsync(_botOptions.Value.BotChannel, messageText);
 		res.AssertOk();
 	}
 

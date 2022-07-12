@@ -1,8 +1,10 @@
+using MementoNagBot.Options;
 using MementoNagBot.Services;
 using MementoNagBot.Triggers;
 using MementoNagBot.Wrappers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 using SlackAPI;
 
@@ -17,15 +19,17 @@ public class ManualReminderTriggerTests
 		[Fact]
         public async Task ThenItSendsAMessageToSlackChannel()
         {
-	        Environment.SetEnvironmentVariable("SLACK_API_TOKEN","12345"); // TODO - Replace with IOptions?
+	        const string channel = "#NoChannel";
 	        ISlackClient client = Substitute.For<ISlackClient>();
 	        client.PostMessageAsync(Arg.Any<string>(), Arg.Any<string>())
 		        .Returns(Task.FromResult(new PostMessageResponse { ok = true }));
-	        SlackMessageService service = new(client);
+
+	        IOptions<BotOptions> options = Microsoft.Extensions.Options.Options.Create(new BotOptions{BotChannel = channel});
+	        SlackMessageService service = new(client, options);
 	        ManualReminderTrigger trigger = new(service);
 	        HttpRequest req = new DefaultHttpRequest(new DefaultHttpContext());
 	        await trigger.RunAsync(req, null);
-	        await client.Received(1).PostMessageAsync("#botspam", "What is the answer to life, the universe, and everything?");
+	        await client.Received(1).PostMessageAsync(channel, "What is the answer to life, the universe, and everything?");
         }
 	}
 }
