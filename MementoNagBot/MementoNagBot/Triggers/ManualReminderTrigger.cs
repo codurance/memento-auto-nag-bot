@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using MementoNagBot.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

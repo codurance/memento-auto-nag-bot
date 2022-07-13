@@ -1,11 +1,9 @@
-using System.Linq;
-using System.Threading.Tasks;
-using MementoNagBot.Options;
+using MementoNagBot.Models.Options;
 using Microsoft.Extensions.Options;
 using SlackAPI;
 using SlackAPI.RPCMessages;
 
-namespace MementoNagBot.Wrappers;
+namespace MementoNagBot.Clients.Slack;
 
 public class SlackClientWrapper: ISlackClient
 {

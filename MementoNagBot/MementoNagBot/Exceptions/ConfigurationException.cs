@@ -1,5 +1,3 @@
-using System;
-
 namespace MementoNagBot.Exceptions;
 
 public class MissingConfigurationException : Exception

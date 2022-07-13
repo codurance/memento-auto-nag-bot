@@ -1,4 +1,4 @@
-namespace MementoNagBot.Options;
+namespace MementoNagBot.Models.Options;
 
 public class SlackOptions
 {

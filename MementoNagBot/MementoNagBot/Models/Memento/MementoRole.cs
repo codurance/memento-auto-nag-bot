@@ -1,4 +1,4 @@
-namespace MementoNagBot.Models;
+namespace MementoNagBot.Models.Memento;
 
 public enum MementoRole
 {

@@ -1,6 +1,4 @@
-using System;
-
-namespace MementoNagBot.Models;
+namespace MementoNagBot.Models.Memento;
 
 public record MementoTimeEntry
 (
