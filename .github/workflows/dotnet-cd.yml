@@ -4,7 +4,7 @@ on:
   push:
     branches: [ master ]
     paths:
-      - ./MementoNagBot/**
+      - MementoNagBot/MementoNagBot/**
   workflow_dispatch:
 jobs:
 
