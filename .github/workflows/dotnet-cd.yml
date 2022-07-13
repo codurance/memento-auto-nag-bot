@@ -1,0 +1,46 @@
+name: .NET Continuous Deployment
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - ./MementoNagBot/**
+  workflow_dispatch:
+jobs:
+
+  test:
+    name: Test Project
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: 6.0.x
+      - name: Run Unit Tests
+        run: dotnet test --logger GitHubActions ./MementoNagBot/MementoNagBot.sln
+  
+  deploy:
+    name: Deploy to Azure
+    runs-on: ubuntu-latest
+    env:
+      AZURE_FUNCTIONAPP_PACKAGE_PATH: ./MementoNagBot/MementoNagBot
+      AZURE_FUNCTIONAPP_NAME: memento-bot
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: 6.0.x
+      - name: Resolve Project Dependencies and Build
+        shell: bash
+        run: |
+          pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+          dotnet build --configuration Release --output ./output
+          popd
+      - name: Push Function to Azure
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+          package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
