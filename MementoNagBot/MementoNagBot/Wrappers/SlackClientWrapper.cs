@@ -1,7 +1,9 @@
+using System.Linq;
 using System.Threading.Tasks;
 using MementoNagBot.Options;
 using Microsoft.Extensions.Options;
 using SlackAPI;
+using SlackAPI.RPCMessages;
 
 namespace MementoNagBot.Wrappers;
 
@@ -16,7 +18,9 @@ public class SlackClientWrapper: ISlackClient
 	}
 
 
-	public async Task<PostMessageResponse> PostMessageAsync(
+	public Task<UserEmailLookupResponse> GetUserByEmailAsync(string email) => _client.GetUserByEmailAsync(email);
+
+	public Task<PostMessageResponse> PostMessageAsync(
 		string channelId,
 		string text,
 		string botName = null,
@@ -28,9 +32,7 @@ public class SlackClientWrapper: ISlackClient
 		string iconUrl = null,
 		string iconEmoji = null,
 		bool asUser = false,
-		string threadTs = null)
-	{
-		return await _client.PostMessageAsync(channelId, text, botName, parse, linkNames, blocks, attachments,
+		string threadTs = null) =>
+		_client.PostMessageAsync(channelId, text, botName, parse, linkNames, blocks, attachments,
 			unfurlLinks, iconUrl, iconEmoji, asUser, threadTs);
-	}
 }

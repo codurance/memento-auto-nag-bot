@@ -20,8 +20,16 @@ public class ManualReminderTrigger
 	[FunctionName("ReminderTrigger")]
 	public async Task<IActionResult> RunAsync([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req, ILogger log)
 	{
-		await _messageService.SendMessageToBotChannel("What is the answer to life, the universe, and everything?");
+		// This is rough but it lets us decouple the tests
+		// It'll do until the mementos service is implemented
+		if (req.Query["path"] == "channel")
+		{
+			await _messageService.SendMessageToBotChannel("What is the answer to life, the universe, and everything?");
+		}
+		else
+		{
+			await _messageService.SendDirectMessageToUser("james.hughes@codurance.com", "42");
+		}
 		return new OkResult();
 	}
-	
 }

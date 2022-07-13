@@ -5,6 +5,8 @@ using MementoNagBot.Wrappers;
 using Microsoft.Extensions.Options;
 using SlackAPI;
 
+using SlackAPI.RPCMessages;
+
 namespace MementoNagBot.Services;
 
 public class SlackMessageService
@@ -26,6 +28,10 @@ public class SlackMessageService
 
 	public async Task SendDirectMessageToUser(string userEmail, string message)
 	{
-		throw new NotImplementedException();
+		UserEmailLookupResponse lookupResponse = await _client.GetUserByEmailAsync(userEmail);
+		lookupResponse.AssertOk();
+		User user = lookupResponse.user;
+		PostMessageResponse res = await _client.PostMessageAsync(user.id, message);
+		res.AssertOk();
 	}
 }
