@@ -28,7 +28,7 @@ public class ManualReminderTrigger
 		}
 		else
 		{
-			await _messageService.SendDirectMessageToUser("james.hughes@codurance.com", "42");
+			await _messageService.SendDirectMessageToUser("james.hughes@codurance.com", "If I'm 555 then you're 666");
 		}
 		return new OkResult();
 	}

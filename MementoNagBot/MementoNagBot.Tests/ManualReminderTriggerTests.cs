@@ -58,7 +58,7 @@ public class ManualReminderTriggerTests
 	        req.QueryString = new("?path=direct");
 	        IActionResult? res = await trigger.RunAsync(req, null);
 	        res.ShouldBeAssignableTo<OkResult>();
-	        await client.Received(1).PostMessageAsync(response.user.id, "42");
+	        await client.Received(1).PostMessageAsync(response.user.id, "If I'm 555 then you're 666");
         }
 	}
 }
