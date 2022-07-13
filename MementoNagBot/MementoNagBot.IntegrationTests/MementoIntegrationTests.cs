@@ -56,7 +56,7 @@ public class MementoIntegrationTests
 				List<MementoUser>? res = await client.GetActiveInternalUsers();
 
 				res.ShouldNotBeNull();
-				res.ShouldAllBe(m => m.Role != MementoRole.External);
+				res.ShouldAllBe(m => m.Role != "External");
 			}
 		}
 		

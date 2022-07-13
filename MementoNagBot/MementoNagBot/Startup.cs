@@ -1,7 +1,7 @@
 using System.IO;
-using MementoNagBot.Options;
+using MementoNagBot.Clients.Slack;
+using MementoNagBot.Models.Options;
 using MementoNagBot.Services;
-using MementoNagBot.Wrappers;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,11 +20,11 @@ public class Startup: FunctionsStartup
 
 	public override void Configure(IFunctionsHostBuilder builder)
 	{
-		
 		IConfiguration config = builder.GetContext().Configuration;
 		
 		builder.Services.Configure<BotOptions>(config.GetSection("Values:BotOptions"));
 		builder.Services.Configure<SlackOptions>(config.GetSection("Values:SlackOptions"));
+		builder.Services.Configure<MementoOptions>(config.GetSection("Values:MementoOptions"));
 		
 		builder.Services.AddTransient<SlackMessageService>();
 		builder.Services.AddTransient<ISlackClient, SlackClientWrapper>();
