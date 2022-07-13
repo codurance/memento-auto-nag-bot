@@ -1,7 +1,7 @@
-using MementoNagBot.Options;
+using MementoNagBot.Clients.Slack;
+using MementoNagBot.Models.Options;
 using MementoNagBot.Services;
 using MementoNagBot.Triggers;
-using MementoNagBot.Wrappers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +24,7 @@ public class ManualReminderTriggerTests
 	        ISlackClient client = Substitute.For<ISlackClient>();
 	        client.PostMessageAsync(Arg.Any<string>(), Arg.Any<string>())
 		        .Returns(Task.FromResult(new PostMessageResponse { ok = true }));
-	        IOptions<BotOptions> options = Microsoft.Extensions.Options.Options.Create(new BotOptions{BotChannel = channel});
+	        IOptions<BotOptions> options = Options.Create(new BotOptions{BotChannel = channel});
 	        SlackMessageService service = new(client, options);
 	        ManualReminderTrigger trigger = new(service);
 	        HttpRequest req = new DefaultHttpRequest(new DefaultHttpContext());

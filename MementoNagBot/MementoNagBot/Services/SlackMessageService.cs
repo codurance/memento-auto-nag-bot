@@ -1,7 +1,5 @@
-using System;
-using System.Threading.Tasks;
-using MementoNagBot.Options;
-using MementoNagBot.Wrappers;
+using MementoNagBot.Clients.Slack;
+using MementoNagBot.Models.Options;
 using Microsoft.Extensions.Options;
 using SlackAPI;
 

@@ -24,7 +24,7 @@ public class MementoClient: IMementoClient
 		
 		return users
 			.Where(u => u.Active)
-			.Where(u => u.Role != "External")
+			.Where(u => u.Role != MementoRole.External)
 			.ToList();
 	}
 

@@ -1,4 +1,3 @@
-using System.Net.Http.Headers;
 using MementoNagBot.Clients.Memento;
 using MementoNagBot.Models.Memento;
 using Shouldly;
@@ -14,16 +13,23 @@ public class MementoIntegrationTests
 	{
 		private static readonly string MementoAuthToken = Environment.GetEnvironmentVariable("MEMENTO_AUTH_TOKEN")
 		                                                   ?? throw new("You need to set the MEMENTO_AUTH_TOKEN in your env vars");
+
+		
+		
+		public static IMementoClient GetMementoClient()
+		{
+			HttpClient innerClient = new();
+			innerClient.BaseAddress = new(MementoUrl);
+			innerClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", MementoAuthToken);
+			return new MementoClient(innerClient);
+		}
 		
 		public class WhenIAttemptToGetTheUserList
 		{
 			[Fact]
 			public async Task ThenMementoReturnsAListOfUsers()
 			{
-				HttpClient innerClient = new();
-				innerClient.BaseAddress = new(MementoUrl);
-				innerClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", MementoAuthToken);
-				IMementoClient client = new MementoClient(innerClient);
+				IMementoClient client = GetMementoClient();
 				
 				List<MementoUser>? res = await client.GetActiveInternalUsers();
 
@@ -34,10 +40,7 @@ public class MementoIntegrationTests
 			[Fact]
 			public async Task ThenAllUsersReturnedAreActive()
 			{
-				HttpClient innerClient = new();
-				innerClient.BaseAddress = new(MementoUrl);
-				innerClient.DefaultRequestHeaders.Authorization = new("", MementoAuthToken);
-				IMementoClient client = new MementoClient(innerClient);
+				IMementoClient client = GetMementoClient();
 				
 				List<MementoUser>? res = await client.GetActiveInternalUsers();
 
@@ -48,15 +51,12 @@ public class MementoIntegrationTests
 			[Fact]
 			public async Task ThenAllUsersReturnedAreInternal()
 			{
-				HttpClient innerClient = new();
-				innerClient.BaseAddress = new(MementoUrl);
-				innerClient.DefaultRequestHeaders.Authorization = new("", MementoAuthToken);
-				IMementoClient client = new MementoClient(innerClient);
+				IMementoClient client = GetMementoClient();
 				
 				List<MementoUser>? res = await client.GetActiveInternalUsers();
 
 				res.ShouldNotBeNull();
-				res.ShouldAllBe(m => m.Role != "External");
+				res.ShouldAllBe(m => m.Role != MementoRole.External);
 			}
 		}
 		
