@@ -1,8 +1,7 @@
-using System.Threading.Tasks;
 using SlackAPI;
 using SlackAPI.RPCMessages;
 
-namespace MementoNagBot.Wrappers;
+namespace MementoNagBot.Clients.Slack;
 
 public interface ISlackClient
 {
