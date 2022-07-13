@@ -17,4 +17,7 @@ jobs:
         with:
           dotnet-version: 6.0.x
       - name: Run unit tests
+        env:
+          MEMENTO_URL: ${{ secrets.MEMENTO_URL }}
+          MEMENTO_AUTH_TOKEN: ${{ secrets.MEMENTO_AUTH_TOKEN }}
         run: dotnet test --logger GitHubActions ./MementoNagBot/MementoNagBot.sln
