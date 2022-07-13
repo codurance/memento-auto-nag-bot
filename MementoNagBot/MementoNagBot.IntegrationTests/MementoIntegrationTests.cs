@@ -14,9 +14,8 @@ public class MementoIntegrationTests
 		private static readonly string MementoAuthToken = Environment.GetEnvironmentVariable("MEMENTO_AUTH_TOKEN")
 		                                                   ?? throw new("You need to set the MEMENTO_AUTH_TOKEN in your env vars");
 
-		
-		
-		public static IMementoClient GetMementoClient()
+
+		private static IMementoClient GetMementoClient()
 		{
 			HttpClient innerClient = new();
 			innerClient.BaseAddress = new(MementoUrl);
