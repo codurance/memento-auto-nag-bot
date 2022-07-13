@@ -1,10 +1,13 @@
 using System.Threading.Tasks;
 using SlackAPI;
+using SlackAPI.RPCMessages;
 
 namespace MementoNagBot.Wrappers;
 
 public interface ISlackClient
 {
+	public Task<UserEmailLookupResponse> GetUserByEmailAsync(string email);
+	
 	public Task<PostMessageResponse> PostMessageAsync(
 		string channelId,
 		string text,
