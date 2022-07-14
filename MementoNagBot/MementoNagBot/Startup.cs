@@ -21,7 +21,7 @@ public class Startup: FunctionsStartup
 	public override void Configure(IFunctionsHostBuilder builder)
 	{
 		IConfiguration config = builder.GetContext().Configuration;
-		
+
 		builder.Services.Configure<BotOptions>(config.GetSection("Values:BotOptions"));
 		builder.Services.Configure<SlackOptions>(config.GetSection("Values:SlackOptions"));
 		builder.Services.Configure<MementoOptions>(config.GetSection("Values:MementoOptions"));
