@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -18,7 +19,7 @@ public class MementoClient: IMementoClient
 
 	public async Task<List<MementoUser>> GetActiveInternalUsers()
 	{
-		List<MementoUser> users = await _client.GetFromJsonAsync<List<MementoUser>>("users");
+		List<MementoUser>? users = await _client.GetFromJsonAsync<List<MementoUser>>("users");
 		
 		if (users is null) return new();
 		
@@ -28,8 +29,15 @@ public class MementoClient: IMementoClient
 			.ToList();
 	}
 
-	public Task<List<MementoTimeEntry>> GetTimeEntriesForUser(string userId, InclusiveDateRange dateRange)
+	public async Task<List<MementoTimeEntry>> GetTimeEntriesForUser(string userId, InclusiveDateRange dateRange)
 	{
-		throw new NotImplementedException();
+		NameValueCollection query = System.Web.HttpUtility.ParseQueryString(string.Empty);
+		query.Add("start", dateRange.StartDate.ToString("yyyy-MM-dd"));
+		query.Add("end", dateRange.EndDate.ToString("yyyy-MM-dd"));
+		string queryString = query.ToString() ?? string.Empty;
+
+		List<MementoTimeEntry>? entries = await _client.GetFromJsonAsync<List<MementoTimeEntry>>($"user/{userId}/timeentries?{queryString}");
+
+		return entries?.OrderBy(e => e.ActivityDate).ToList() ?? new();
 	}
 }

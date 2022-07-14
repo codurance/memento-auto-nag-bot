@@ -1,5 +1,6 @@
 using MementoNagBot.Clients.Memento;
 using MementoNagBot.Models.Memento;
+using MementoNagBot.Models.Misc;
 using Shouldly;
 
 namespace MementoNagBot.IntegrationTests;
@@ -41,7 +42,7 @@ public class MementoIntegrationTests
 			{
 				IMementoClient client = GetMementoClient();
 				
-				List<MementoUser>? res = await client.GetActiveInternalUsers();
+				List<MementoUser> res = await client.GetActiveInternalUsers();
 
 				res.ShouldNotBeNull();
 				res.ShouldAllBe(m => m.Active);
@@ -52,7 +53,7 @@ public class MementoIntegrationTests
 			{
 				IMementoClient client = GetMementoClient();
 				
-				List<MementoUser>? res = await client.GetActiveInternalUsers();
+				List<MementoUser> res = await client.GetActiveInternalUsers();
 
 				res.ShouldNotBeNull();
 				res.ShouldAllBe(m => m.Role != MementoRole.External);
@@ -61,10 +62,48 @@ public class MementoIntegrationTests
 		
 		public class WhenIAttemptToGetActivitiesForAUser
 		{
+			// This isn't ideal, but for the sake of an internal tool, testing with known data
+			// That is unlikely to change is fine. In an ideal world, we'd either have a mock API 
+			// Or a fixed test target, but that's overkill for this.
+			
 			[Fact]
 			public async Task ThenAListOfActivitiesIsReturned()
 			{
+				const string testUserEmail = "james.hughes@codurance.com";
+				InclusiveDateRange dateRange = new(new(2022, 06, 27), new(2022, 07, 01));
 				
+				IMementoClient client = GetMementoClient();
+				List<MementoTimeEntry> res = await client.GetTimeEntriesForUser(testUserEmail, dateRange);
+
+				res.Count.ShouldBe(5);
+			}
+			
+			[Fact]
+			public async Task ThenEachActivityHasADateInRange()
+			{
+				const string testUserEmail = "james.hughes@codurance.com";
+				DateOnly startDate = new(2022, 06, 27);
+				DateOnly endDate = new(2022, 07, 01);
+				InclusiveDateRange dateRange = new(startDate, endDate);
+				
+				IMementoClient client = GetMementoClient();
+				List<MementoTimeEntry> res = await client.GetTimeEntriesForUser(testUserEmail, dateRange);
+				
+				res.First().ActivityDate.ShouldBe(startDate);
+				res.Last().ActivityDate.ShouldBe(endDate);
+				res.Skip(1).SkipLast(1).Select(te => te.ActivityDate).ShouldAllBe(ad => ad > startDate && ad < endDate);
+			}
+			
+			[Fact]
+			public async Task ThenTheTotalHoursAreForty()
+			{
+				const string testUserEmail = "james.hughes@codurance.com";
+				InclusiveDateRange dateRange = new(new(2022, 06, 27), new(2022, 07, 01));
+				
+				IMementoClient client = GetMementoClient();
+				List<MementoTimeEntry> res = await client.GetTimeEntriesForUser(testUserEmail, dateRange);
+
+				res.Sum(r => r.Hours).ShouldBe(40);
 			}
 		}
 	}
