@@ -17,7 +17,7 @@ public class NoonTrigger
 	}
 	
 	[FunctionName("NoonTrigger")]
-	public async Task RunAsync([TimerTrigger("0 45 17 * * MON-FRI")] TimerInfo myTimer, ILogger log) // TODO change this back to 1200
+	public async Task RunAsync([TimerTrigger("0 0 12 * * MON-FRI")] TimerInfo myTimer, ILogger log)
 	{
 		CanRunResult canRunResult = _startGate.CanRun();
 		
