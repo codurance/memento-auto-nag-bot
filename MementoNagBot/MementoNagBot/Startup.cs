@@ -29,6 +29,8 @@ public class Startup: FunctionsStartup
 		
 		builder.Services.AddTransient<SlackMessageService>();
 		builder.Services.AddTransient<StartGateService>();
+		builder.Services.AddTransient<MementoReminderService>();
+		
 		builder.Services.AddTransient<ISlackClient, SlackClientWrapper>();
 		builder.Services.AddTransient<IDateProvider, SystemDateProvider>();
 	}
