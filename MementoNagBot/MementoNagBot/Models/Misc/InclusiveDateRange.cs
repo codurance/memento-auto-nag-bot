@@ -2,5 +2,5 @@ namespace MementoNagBot.Models.Misc;
 
 public record InclusiveDateRange(DateOnly StartDate, DateOnly EndDate)
 {
-	public int TotalDays = EndDate.DayNumber - StartDate.DayNumber + 1;
+	public readonly int TotalDays = EndDate.DayNumber - StartDate.DayNumber + 1;
 }
