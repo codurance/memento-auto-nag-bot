@@ -15,7 +15,7 @@ public class AfternoonTrigger
 	}
 
 	[FunctionName("AfternoonTrigger")]
-	public async Task RunAsync([TimerTrigger("0 0 16 * * MON-FRI")] TimerInfo myTimer, ILogger log)
+	public async Task RunAsync([TimerTrigger("0 40 17 * * MON-FRI")] TimerInfo myTimer, ILogger log)
 	{
 		CanRunResult canRunResult = _startGate.CanRun();
 		
