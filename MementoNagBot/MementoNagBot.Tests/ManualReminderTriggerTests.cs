@@ -1,6 +1,6 @@
 using MementoNagBot.Clients.Slack;
 using MementoNagBot.Models.Options;
-using MementoNagBot.Services;
+using MementoNagBot.Services.Messaging;
 using MementoNagBot.Triggers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;

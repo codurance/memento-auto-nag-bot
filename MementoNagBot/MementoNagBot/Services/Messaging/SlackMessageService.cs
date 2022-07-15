@@ -2,10 +2,9 @@ using MementoNagBot.Clients.Slack;
 using MementoNagBot.Models.Options;
 using Microsoft.Extensions.Options;
 using SlackAPI;
-
 using SlackAPI.RPCMessages;
 
-namespace MementoNagBot.Services;
+namespace MementoNagBot.Services.Messaging;
 
 public class SlackMessageService
 {
@@ -18,13 +17,13 @@ public class SlackMessageService
 		_botOptions = botOptions;
 	}
 	
-	public async Task SendMessageToBotChannel(string messageText)
+	public virtual async Task SendMessageToBotChannel(string messageText)
 	{
 		PostMessageResponse res = await _client.PostMessageAsync(_botOptions.Value.BotChannel, messageText);
 		res.AssertOk();
 	}
 
-	public async Task SendDirectMessageToUser(string userEmail, string message)
+	public virtual async Task SendDirectMessageToUser(string userEmail, string message)
 	{
 		UserEmailLookupResponse lookupResponse = await _client.GetUserByEmailAsync(userEmail);
 		lookupResponse.AssertOk();

@@ -1,7 +1,7 @@
 using MementoNagBot.Models.Misc;
 using MementoNagBot.Providers.DateTimes;
 
-namespace MementoNagBot.Services;
+namespace MementoNagBot.Services.Gating;
 
 public class StartGateService
 {
