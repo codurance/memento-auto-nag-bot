@@ -1,6 +1,7 @@
 using System.IO;
 using MementoNagBot.Clients.Slack;
 using MementoNagBot.Models.Options;
+using MementoNagBot.Providers.DateTimes;
 using MementoNagBot.Services;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
@@ -27,6 +28,8 @@ public class Startup: FunctionsStartup
 		builder.Services.Configure<MementoOptions>(config.GetSection("Values:MementoOptions"));
 		
 		builder.Services.AddTransient<SlackMessageService>();
+		builder.Services.AddTransient<StartGateService>();
 		builder.Services.AddTransient<ISlackClient, SlackClientWrapper>();
+		builder.Services.AddTransient<IDateProvider, SystemDateProvider>();
 	}
 }
