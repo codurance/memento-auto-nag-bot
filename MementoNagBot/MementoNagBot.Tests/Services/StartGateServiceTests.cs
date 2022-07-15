@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using MementoNagBot.Models.Misc;
 using MementoNagBot.Providers.DateTimes;
 using MementoNagBot.Services.Gating;
@@ -5,13 +6,11 @@ using MementoNagBot.Tests.Stubs;
 
 namespace MementoNagBot.Tests.Services;
 
-// ReSharper disable once ClassNeverInstantiated.Global
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class StartGateServiceTests
 {
-	// ReSharper disable once ClassNeverInstantiated.Global
 	public class GivenTheCronJobFires
 	{
-		// ReSharper disable once ClassNeverInstantiated.Global
 		public class WhenItIsAFriday
 		{
 			public class AndNotMonthEnd

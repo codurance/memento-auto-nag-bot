@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using MementoNagBot.Clients.Memento;
 using MementoNagBot.Models.Memento;
 using MementoNagBot.Models.Misc;
@@ -5,6 +6,7 @@ using Shouldly;
 
 namespace MementoNagBot.IntegrationTests;
 
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class MementoIntegrationTests
 {
 	private static readonly string MementoUrl = Environment.GetEnvironmentVariable("MEMENTO_URL") 
