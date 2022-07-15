@@ -107,6 +107,21 @@ public class MementoIntegrationTests
 
 				res.Sum(r => r.Hours).ShouldBe(40);
 			}
+
+			[Fact]
+			public async Task IfThereAreNoEntriesThenReturnAnEmptyCollection()
+			{
+				const string testUserEmail = "james.hughes@codurance.com";
+				DateOnly startDate = new(2000, 01, 1);
+				DateOnly endDate = new(2000, 01, 01);
+				InclusiveDateRange dateRange = new(startDate, endDate);
+				
+				IMementoClient client = GetMementoClient();
+				List<MementoTimeEntry> res = await client.GetTimeEntriesForUser(testUserEmail, dateRange);
+
+				res.ShouldNotBeNull();
+				res.ShouldBeEmpty();
+			}
 		}
 	}
 	
