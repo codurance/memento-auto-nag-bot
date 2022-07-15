@@ -2,10 +2,9 @@ using MementoNagBot.Clients.Slack;
 using MementoNagBot.Models.Options;
 using Microsoft.Extensions.Options;
 using SlackAPI;
-
 using SlackAPI.RPCMessages;
 
-namespace MementoNagBot.Services;
+namespace MementoNagBot.Services.Messaging;
 
 public class SlackMessageService
 {

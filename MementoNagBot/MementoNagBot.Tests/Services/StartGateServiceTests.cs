@@ -1,6 +1,6 @@
 using MementoNagBot.Models.Misc;
 using MementoNagBot.Providers.DateTimes;
-using MementoNagBot.Services;
+using MementoNagBot.Services.Gating;
 using MementoNagBot.Tests.Stubs;
 
 namespace MementoNagBot.Tests.Services;

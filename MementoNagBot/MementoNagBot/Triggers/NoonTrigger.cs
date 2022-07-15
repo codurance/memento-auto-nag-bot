@@ -1,5 +1,6 @@
 using MementoNagBot.Models.Misc;
-using MementoNagBot.Services;
+using MementoNagBot.Services.Gating;
+using MementoNagBot.Services.Reminders;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 

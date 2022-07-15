@@ -1,4 +1,6 @@
-namespace MementoNagBot.Services;
+using MementoNagBot.Services.Messaging;
+
+namespace MementoNagBot.Services.Reminders;
 
 public class MementoReminderService
 {
