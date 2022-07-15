@@ -8,8 +8,8 @@ namespace MementoNagBot.Tests.Stubs;
 public class SlackMessageServiceStub : SlackMessageService
 {
 	public string LastBotChannelMessage { get; private set; } = string.Empty;
-	public string LastDirectMessage { get; private set; } = string.Empty;
-	public string LastDirectMessageUser { get; private set; } = string.Empty;
+
+	public readonly List<(string Email, string Message)> DirectMessagesSent = new(); 
 
 	public SlackMessageServiceStub(ISlackClient client, IOptions<BotOptions> botOptions) : base(client, botOptions)
 	{
@@ -23,8 +23,7 @@ public class SlackMessageServiceStub : SlackMessageService
 
 	public override Task SendDirectMessageToUser(string userEmail, string message)
 	{
-		LastDirectMessage = message;
-		LastDirectMessageUser = userEmail;
+		DirectMessagesSent.Add(new(userEmail, message));
 		return Task.CompletedTask;
 	}
 }
