@@ -3,14 +3,19 @@ using AutoFixture;
 using MementoNagBot.Clients.Memento;
 using MementoNagBot.Models.Memento;
 using MementoNagBot.Models.Misc;
+using MementoNagBot.Models.Options;
 using MementoNagBot.Services.Reminders;
 using MementoNagBot.Tests.Stubs;
+using Microsoft.Extensions.Options;
 
 namespace MementoNagBot.Tests.Services;
+
+// Some of these tests are doing a bit too much... There's a planned refactor: https://github.com/codurance/memento-auto-nag-bot/issues/49
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class MementoReminderServiceTests
 {
+	private static IOptions<MementoOptions> _options = Options.Create(new MementoOptions { WhiteList = "WhiteList0, WhiteList1,WhiteList2" }); // Odd spacing is deliberate
 	public class GivenTomorrowIsMonthEnd
 	{
 		private static readonly DateProviderStub DateStub = new(new(2022, 06, 29)); // Wednesday with month-end on Thursday
@@ -24,7 +29,7 @@ public class MementoReminderServiceTests
 			{
 				SlackMessageServiceStub messageStub = new(null!, null!);
 				DateProviderStub dateStub = new(new(2022, 07, 15));
-				MementoReminderService service = new(messageStub, null!, dateStub);
+				MementoReminderService service = new(messageStub, null!, dateStub, _options);
 
 				await service.SendGeneralReminder(true);
 
@@ -42,6 +47,7 @@ public class MementoReminderServiceTests
 			{
 				Dictionary<MementoUser, List<MementoTimeEntry>> testData = GetTestData(DaysInWeek, HoursInDay);
 				List<string> reminderMessages = testData
+					.Where(td => !td.Key.Email.Contains("WhiteList"))
 					.Where(td => td.Value.Sum(te => te.Hours) != HoursInWeek)
 					.Select(td => string.Format(MementoReminderService.MonthEndIndividualReminderTemplate, td.Key.Name.Split(' ')[0]))
 					.ToList();
@@ -55,7 +61,7 @@ public class MementoReminderServiceTests
 					client.GetTimeEntriesForUser(userTimeEntryPair.Key.Email, Arg.Any<InclusiveDateRange>())
 						.Returns(userTimeEntryPair.Value);
 				}
-				MementoReminderService service = new(messageStub, client, DateStub);
+				MementoReminderService service = new(messageStub, client, DateStub, _options);
 				
 				await service.SendIndividualReminders(true);
 				
@@ -71,6 +77,7 @@ public class MementoReminderServiceTests
 			{
 				Dictionary<MementoUser, List<MementoTimeEntry>> testData = GetTestData(DaysInWeek, HoursInDay);
 				List<string> emailsExpectedToHaveReceivedAMessage = testData
+					.Where(td => !td.Key.Email.Contains("WhiteList"))
 					.Where(td => td.Value.Sum(te => te.Hours) != HoursInWeek)
 					.Select(td => td.Key.Email)
 					.ToList();
@@ -83,7 +90,7 @@ public class MementoReminderServiceTests
 					client.GetTimeEntriesForUser(userTimeEntryPair.Key.Email, Arg.Any<InclusiveDateRange>())
 						.Returns(userTimeEntryPair.Value);
 				}
-				MementoReminderService service = new(messageStub, client, DateStub);
+				MementoReminderService service = new(messageStub, client, DateStub, _options);
 				
 				await service.SendIndividualReminders(true);
 
@@ -94,7 +101,26 @@ public class MementoReminderServiceTests
 					.ShouldBeEquivalentTo(emailsExpectedToHaveReceivedAMessage);
 			}
 
-			
+			[Fact]
+			public async Task ThenNoWhitelistedUsersShouldBeMessaged()
+			{
+				Dictionary<MementoUser, List<MementoTimeEntry>> testData = GetTestData(DaysInWeek, HoursInDay);
+				List<string> whitelistedUsers = testData.Keys.Select(u => u.Email).Where(u => u.Contains("WhiteList")).ToList();
+				
+				SlackMessageServiceStub messageStub = new(null!, null!);
+				IMementoClient client = Substitute.For<IMementoClient>();
+				client.GetActiveInternalUsers().Returns(testData.Keys.ToList());
+				foreach (KeyValuePair<MementoUser, List<MementoTimeEntry>> userTimeEntryPair in testData)
+				{
+					client.GetTimeEntriesForUser(userTimeEntryPair.Key.Email, Arg.Any<InclusiveDateRange>())
+						.Returns(userTimeEntryPair.Value);
+				}
+				MementoReminderService service = new(messageStub, client, DateStub, _options);
+				
+				await service.SendIndividualReminders(true);
+				
+				messageStub.DirectMessagesSent.Select(dm => dm.Email).ToList().ForEach(e => whitelistedUsers.ShouldNotContain(e));
+			}
 		}
 	}
 
@@ -110,7 +136,7 @@ public class MementoReminderServiceTests
 			public async Task ThenTheGeneralReminderMessageIsSent()
 			{
 				SlackMessageServiceStub messageStub = new(null!, null!);
-				MementoReminderService service = new(messageStub, null!, DateStub);
+				MementoReminderService service = new(messageStub, null!, DateStub, _options);
 
 				await service.SendGeneralReminder(false);
 
@@ -129,6 +155,7 @@ public class MementoReminderServiceTests
 			{
 				Dictionary<MementoUser, List<MementoTimeEntry>> testData = GetTestData(DaysInWeek, HoursInDay);
 				List<string> reminderMessages = testData
+					.Where(td => !td.Key.Email.Contains("WhiteList"))
 					.Where(td => td.Value.Sum(te => te.Hours) != HoursInWeek)
 					.Select(td => string.Format(MementoReminderService.IndividualReminderTemplate, td.Key.Name.Split(' ')[0]))
 					.ToList();
@@ -142,7 +169,7 @@ public class MementoReminderServiceTests
 					client.GetTimeEntriesForUser(userTimeEntryPair.Key.Email, Arg.Any<InclusiveDateRange>())
 						.Returns(userTimeEntryPair.Value);
 				}
-				MementoReminderService service = new(messageStub, client, DateStub);
+				MementoReminderService service = new(messageStub, client, DateStub, _options);
 				
 				await service.SendIndividualReminders(false);
 				
@@ -158,6 +185,7 @@ public class MementoReminderServiceTests
 			{
 				Dictionary<MementoUser, List<MementoTimeEntry>> testData = GetTestData(DaysInWeek, HoursInDay);
 				List<string> emailsExpectedToHaveReceivedAMessage = testData
+					.Where(td => !td.Key.Email.Contains("WhiteList"))
 					.Where(td => td.Value.Sum(te => te.Hours) != HoursInWeek)
 					.Select(td => td.Key.Email)
 					.ToList();
@@ -170,7 +198,7 @@ public class MementoReminderServiceTests
 					client.GetTimeEntriesForUser(userTimeEntryPair.Key.Email, Arg.Any<InclusiveDateRange>())
 						.Returns(userTimeEntryPair.Value);
 				}
-				MementoReminderService service = new(messageStub, client, DateStub);
+				MementoReminderService service = new(messageStub, client, DateStub, _options);
 				
 				await service.SendIndividualReminders(false);
 
@@ -179,6 +207,27 @@ public class MementoReminderServiceTests
 					.Select(dm => dm.Email)
 					.ToList()
 					.ShouldBeEquivalentTo(emailsExpectedToHaveReceivedAMessage);
+			}
+			
+			[Fact]
+			public async Task ThenNoWhitelistedUsersShouldBeMessaged()
+			{
+				Dictionary<MementoUser, List<MementoTimeEntry>> testData = GetTestData(DaysInWeek, HoursInDay);
+				List<string> whitelistedUsers = testData.Keys.Select(u => u.Email).Where(u => u.Contains("WhiteList")).ToList();
+				
+				SlackMessageServiceStub messageStub = new(null!, null!);
+				IMementoClient client = Substitute.For<IMementoClient>();
+				client.GetActiveInternalUsers().Returns(testData.Keys.ToList());
+				foreach (KeyValuePair<MementoUser, List<MementoTimeEntry>> userTimeEntryPair in testData)
+				{
+					client.GetTimeEntriesForUser(userTimeEntryPair.Key.Email, Arg.Any<InclusiveDateRange>())
+						.Returns(userTimeEntryPair.Value);
+				}
+				MementoReminderService service = new(messageStub, client, DateStub, _options);
+				
+				await service.SendIndividualReminders(false);
+				
+				messageStub.DirectMessagesSent.Select(dm => dm.Email).ToList().ForEach(e => whitelistedUsers.ShouldNotContain(e));
 			}
 		}
 	}
@@ -225,6 +274,16 @@ public class MementoReminderServiceTests
 		for (int i = 0; i < 3; i++)
 		{
 			MementoUser user = fixture.Create<MementoUser>();
+			List<MementoTimeEntry> timeEntries = new();
+			userTimeEntries.Add(user, timeEntries);
+		}
+		
+		// Generate three whitelisted people with no-timesheet
+		
+		for (int i = 0; i < 3; i++)
+		{
+			MementoUser user = fixture.Create<MementoUser>();
+			user = user with { Email = $"WhiteList{i}" };
 			List<MementoTimeEntry> timeEntries = new();
 			userTimeEntries.Add(user, timeEntries);
 		}
