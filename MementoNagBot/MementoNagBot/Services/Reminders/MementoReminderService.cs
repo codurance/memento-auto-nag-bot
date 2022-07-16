@@ -3,8 +3,10 @@ using System.Linq;
 using MementoNagBot.Clients.Memento;
 using MementoNagBot.Models.Memento;
 using MementoNagBot.Models.Misc;
+using MementoNagBot.Models.Options;
 using MementoNagBot.Providers.DateTimes;
 using MementoNagBot.Services.Messaging;
+using Microsoft.Extensions.Options;
 
 namespace MementoNagBot.Services.Reminders;
 
@@ -13,6 +15,7 @@ public class MementoReminderService
 	private readonly SlackMessageService _messageService;
 	private readonly IMementoClient _mementoClient;
 	private readonly IDateProvider _dateProvider;
+	private readonly IOptions<MementoOptions> _options;
 
 
 	//TODO - Making these public for now, as when I add the translation service, they'll be injected. Just makes this iteration easier.
@@ -21,11 +24,12 @@ public class MementoReminderService
 	public const string IndividualReminderTemplate = "Hi {0}, it looks like you've forgotten to fill out your Memento. We know you're busy but we really need it to be kept up to date for billing purposes. So please could you ensure it's updated as soon as possible! If you're having difficulties doing so, please reach out to your manager!";
 	public const string MonthEndIndividualReminderTemplate = "Hi {0}, it looks like you've forgotten to fill out your Memento. We know you're busy but we really need it to be kept up to date for billing purposes. So please could you ensure it's updated as soon as possible! Please also remember to fill out tomorrow as it's month end. If you're having difficulties doing so, please reach out to your manager!";
 
-	public MementoReminderService(SlackMessageService messageService, IMementoClient mementoClient, IDateProvider dateProvider)
+	public MementoReminderService(SlackMessageService messageService, IMementoClient mementoClient, IDateProvider dateProvider, IOptions<MementoOptions> options)
 	{
 		_messageService = messageService;
 		_mementoClient = mementoClient;
 		_dateProvider = dateProvider;
+		_options = options;
 	}
 
 	public async Task SendGeneralReminder(bool tomorrowIsLastDay) => await _messageService.SendMessageToBotChannel(tomorrowIsLastDay ? MonthEndReminderText : GeneralReminderText);
@@ -41,7 +45,8 @@ public class MementoReminderService
 		// I also don't know lisp... Or I'd add the endpoint to Memento.
 		// If this ever happens, use this endpoint instead: https://github.com/codurance/memento/issues/62
 
-		List<MementoUser> users = await _mementoClient.GetActiveInternalUsers();
+		IEnumerable<MementoUser> users = (await _mementoClient.GetActiveInternalUsers())
+			.Where(u => !_options.Value.WhiteList.Contains(u.Email));
 
 		foreach (MementoUser user in users)
 		{
