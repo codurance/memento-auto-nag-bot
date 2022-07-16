@@ -2,34 +2,24 @@ using System.Text.Json.Serialization;
 
 namespace MementoNagBot.Models.Memento;
 
-// public record MementoUser
-// (
-// 	string Id,
-// 	string Name,
-// 	string Email,
-// 	MementoRole Role,
-// 	bool Active,
-// 	string HolidaysRegion
-// );
-
 public record MementoUser
-{
-	[JsonPropertyName("id")]
-	public string Id { get; init; } 
+(
+	[property: JsonPropertyName("id")]
+	string Id,
 	
-	[JsonPropertyName("name")]
-	public string Name { get; init; } 
+	[property: JsonPropertyName("name")]
+	string Name,
 	
-	[JsonPropertyName("email")]
-	public string Email { get; init; }
+	[property: JsonPropertyName("email")]
+	string Email,
 	
-	[JsonPropertyName("role")]
-	[JsonConverter(typeof(JsonStringEnumConverter))]
-	public MementoRole Role { get; init; } 
+	[property: JsonPropertyName("role")]
+	[property: JsonConverter(typeof(JsonStringEnumConverter))]
+	MementoRole Role,
 	
-	[JsonPropertyName("active")]
-	public bool Active { get; init; } 
+	[property: JsonPropertyName("active")]
+	bool Active,
 	
-	[JsonPropertyName("holidays_region")]
-	public string HolidaysRegion { get; init; } 
-}
+	[property: JsonPropertyName("holidays_region")]
+	string HolidaysRegion
+);
