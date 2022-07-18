@@ -50,7 +50,13 @@ public class MementoReminderService
 
 		foreach (MementoUser user in users)
 		{
-			List<MementoTimeEntry> timeEntries = await _mementoClient.GetTimeEntriesForUser(user.Email, dateRange);
+			MementoTimeSheet? timeEntries = await _mementoClient.GetTimeSheetForUser(user.Email, dateRange);
+
+			if (timeEntries is null)
+			{
+				// TODO - Log out warning because we're not that worried unless we get a lot of these
+				continue;
+			}
 			
 			bool fullTimeSheet = timeEntries.Sum(te => te.Hours) >= dateRange.TotalDays * 8;
 			if (fullTimeSheet) continue;

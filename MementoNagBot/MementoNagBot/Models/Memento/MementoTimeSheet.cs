@@ -17,6 +17,7 @@ public class MementoTimeSheet: ICollection<MementoTimeEntry>
 	{
 		_dateRange = new(DateOnly.MinValue, DateOnly.MinValue);
 		_innerList = new();
+		_hoursInDay = 8;
 	}
 
 	public MementoTimeSheet(InclusiveDateRange dateRange, int hoursInDay = 8)
