@@ -1,7 +1,7 @@
 # Memento Bot
 
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/codurance/memento-auto-nag-bot/.NET%20Continuous%20Integration?label=BUILD%20CI&style=for-the-badge)](https://github.com/hughesjs/DiscosWebSdk/actions)
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/codurance/memento-auto-nag-bot/.NET%20Continuous%20Deployment?label=BUILD%20CD&style=for-the-badge)](https://github.com/hughesjs/DiscosWebSdk/actions)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/codurance/memento-auto-nag-bot/.NET%20Continuous%20Integration?label=BUILD%20CI&style=for-the-badge)](https://github.com/codurance/memento-auto-nag-bot/actions)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/codurance/memento-auto-nag-bot/.NET%20Continuous%20Deployment?label=BUILD%20CD&style=for-the-badge)](https://github.com/codurance/memento-auto-nag-bot/actions)
 ![GitHub top language](https://img.shields.io/github/languages/top/codurance/memento-auto-nag-bot?style=for-the-badge)
 [![GitHub](https://img.shields.io/github/license/codurance/memento-auto-nag-bot?style=for-the-badge)](LICENSE)
 ![FTB](https://raw.githubusercontent.com/hughesjs/custom-badges/master/made-in/made-in-scotland.svg)
