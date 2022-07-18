@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using MementoNagBot.Models.Misc;
 
 namespace MementoNagBot.Models.Memento;
@@ -7,21 +8,34 @@ namespace MementoNagBot.Models.Memento;
 public class MementoTimeSheet: ICollection<MementoTimeEntry>
 {
 	private readonly List<MementoTimeEntry> _innerList;
-	private DateOnly _startDate;
-	private DateOnly _endDate;
-	private int _hoursInDay;
+	private readonly InclusiveDateRange _dateRange;
+	private readonly int _hoursInDay;
 
 	public MementoTimeSheet(InclusiveDateRange dateRange, int hoursInDay = 8)
 	{
 		_innerList = new();
-		_startDate = dateRange.StartDate;
-		_endDate = dateRange.EndDate;
+		_dateRange = dateRange;
 		_hoursInDay = hoursInDay;
 	}
 	
 	public int Count => _innerList.Count;
 	
 	public bool IsReadOnly => false;
+
+	public bool IsComplete()
+	{
+		Dictionary<DateOnly, List<MementoTimeEntry>> timeEntriesByDay = _innerList
+			.GroupBy(te => te.ActivityDate)
+			.ToDictionary(k => k.Key, v => v.ToList());
+		
+		foreach (DateOnly date in _dateRange.Where(d => d.DayOfWeek is not DayOfWeek.Saturday or DayOfWeek.Sunday))
+		{
+			if (!timeEntriesByDay.TryGetValue(date, out List<MementoTimeEntry>? timeEntries)) return false;
+			if (timeEntries.Sum(te => te.Hours) < _hoursInDay) return false;
+		}
+
+		return true;
+	} 
 
 	public IEnumerator<MementoTimeEntry> GetEnumerator() => _innerList.GetEnumerator();
 
@@ -36,6 +50,4 @@ public class MementoTimeSheet: ICollection<MementoTimeEntry>
 	public void CopyTo(MementoTimeEntry[] array, int arrayIndex) => _innerList.CopyTo(array, arrayIndex);
 
 	public bool Remove(MementoTimeEntry item) => _innerList.Remove(item);
-
-
 }
