@@ -33,7 +33,7 @@ public class MementoIntegrationTests
 			{
 				IMementoClient client = GetMementoClient();
 				
-				List<MementoUser>? res = await client.GetActiveInternalUsers();
+				List<MementoUser> res = await client.GetActiveInternalUsers();
 
 				res.ShouldNotBeNull();
 				res.Count.ShouldBeGreaterThan(30);
@@ -75,7 +75,7 @@ public class MementoIntegrationTests
 				InclusiveDateRange dateRange = new(new(2022, 06, 27), new(2022, 07, 01));
 				
 				IMementoClient client = GetMementoClient();
-				MementoTimeSheet? res = await client.GetTimeSheetForUser(testUserEmail, dateRange);
+				MementoTimeSheet res = await client.GetTimeSheetForUser(testUserEmail, dateRange);
 
 				res.ShouldNotBeNull();
 				res.Count.ShouldBe(5);
@@ -90,7 +90,7 @@ public class MementoIntegrationTests
 				InclusiveDateRange dateRange = new(startDate, endDate);
 				
 				IMementoClient client = GetMementoClient();
-				MementoTimeSheet? res = await client.GetTimeSheetForUser(testUserEmail, dateRange);
+				MementoTimeSheet res = await client.GetTimeSheetForUser(testUserEmail, dateRange);
 
 				res.ShouldNotBeNull();
 				res.First().ActivityDate.ShouldBe(startDate);
@@ -105,7 +105,7 @@ public class MementoIntegrationTests
 				InclusiveDateRange dateRange = new(new(2022, 06, 27), new(2022, 07, 01));
 				
 				IMementoClient client = GetMementoClient();
-				MementoTimeSheet? res = await client.GetTimeSheetForUser(testUserEmail, dateRange);
+				MementoTimeSheet res = await client.GetTimeSheetForUser(testUserEmail, dateRange);
 
 				res.ShouldNotBeNull();
 				res.Sum(r => r.Hours).ShouldBe(40);
@@ -120,7 +120,7 @@ public class MementoIntegrationTests
 				InclusiveDateRange dateRange = new(startDate, endDate);
 				
 				IMementoClient client = GetMementoClient();
-				MementoTimeSheet? res = await client.GetTimeSheetForUser(testUserEmail, dateRange);
+				MementoTimeSheet res = await client.GetTimeSheetForUser(testUserEmail, dateRange);
 
 				res.ShouldNotBeNull();
 				res.ShouldBeEmpty();
@@ -133,7 +133,7 @@ public class MementoIntegrationTests
 				InclusiveDateRange dateRange = new(new(2022, 06, 27), new(2022, 07, 01));
 				
 				IMementoClient client = GetMementoClient();
-				MementoTimeSheet? res = await client.GetTimeSheetForUser(testUserEmail, dateRange);
+				MementoTimeSheet res = await client.GetTimeSheetForUser(testUserEmail, dateRange);
 
 				res.ShouldNotBeNull();
 				res.DateRange.ShouldBe(dateRange);

@@ -21,7 +21,7 @@ public class MementoReminderServiceTests
 		private static readonly DateProviderStub DateStub = new(new(2022, 06, 29)); // Wednesday with month-end on Thursday
 		private const int DaysInWeek = 4;
 		private const int HoursInDay = 8;
-		private const int HoursInWeek = DaysInWeek * HoursInDay;
+
 		public class WhenISendAGeneralReminder
 		{
 			[Fact]
@@ -129,7 +129,7 @@ public class MementoReminderServiceTests
 		private static readonly DateProviderStub DateStub = new(new(2022, 07, 15));
 		private const int DaysInWeek = 5;
 		private const int HoursInDay = 8;
-		private const int HoursInWeek = DaysInWeek * HoursInDay;
+
 		public class WhenISendAGeneralReminder
 		{
 			[Fact]

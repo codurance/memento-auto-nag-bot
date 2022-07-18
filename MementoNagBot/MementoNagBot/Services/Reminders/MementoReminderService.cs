@@ -50,13 +50,7 @@ public class MementoReminderService
 
 		foreach (MementoUser user in users)
 		{
-			MementoTimeSheet? timeSheet = await _mementoClient.GetTimeSheetForUser(user.Email, dateRange);
-
-			if (timeSheet is null)
-			{
-				// TODO - Log out warning because we're not that worried unless we get a lot of these
-				continue;
-			}
+			MementoTimeSheet timeSheet = await _mementoClient.GetTimeSheetForUser(user.Email, dateRange);
 
 			if (timeSheet.IsComplete()) continue;
 			
