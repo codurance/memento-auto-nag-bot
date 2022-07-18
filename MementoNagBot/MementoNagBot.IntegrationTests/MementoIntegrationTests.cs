@@ -33,7 +33,7 @@ public class MementoIntegrationTests
 			{
 				IMementoClient client = GetMementoClient();
 				
-				List<MementoUser>? res = await client.GetActiveInternalUsers();
+				List<MementoUser> res = await client.GetActiveInternalUsers();
 
 				res.ShouldNotBeNull();
 				res.Count.ShouldBeGreaterThan(30);
@@ -75,8 +75,9 @@ public class MementoIntegrationTests
 				InclusiveDateRange dateRange = new(new(2022, 06, 27), new(2022, 07, 01));
 				
 				IMementoClient client = GetMementoClient();
-				List<MementoTimeEntry> res = await client.GetTimeEntriesForUser(testUserEmail, dateRange);
+				MementoTimeSheet res = await client.GetTimeSheetForUser(testUserEmail, dateRange);
 
+				res.ShouldNotBeNull();
 				res.Count.ShouldBe(5);
 			}
 			
@@ -89,8 +90,9 @@ public class MementoIntegrationTests
 				InclusiveDateRange dateRange = new(startDate, endDate);
 				
 				IMementoClient client = GetMementoClient();
-				List<MementoTimeEntry> res = await client.GetTimeEntriesForUser(testUserEmail, dateRange);
-				
+				MementoTimeSheet res = await client.GetTimeSheetForUser(testUserEmail, dateRange);
+
+				res.ShouldNotBeNull();
 				res.First().ActivityDate.ShouldBe(startDate);
 				res.Last().ActivityDate.ShouldBe(endDate);
 				res.Skip(1).SkipLast(1).Select(te => te.ActivityDate).ShouldAllBe(ad => ad > startDate && ad < endDate);
@@ -103,8 +105,9 @@ public class MementoIntegrationTests
 				InclusiveDateRange dateRange = new(new(2022, 06, 27), new(2022, 07, 01));
 				
 				IMementoClient client = GetMementoClient();
-				List<MementoTimeEntry> res = await client.GetTimeEntriesForUser(testUserEmail, dateRange);
+				MementoTimeSheet res = await client.GetTimeSheetForUser(testUserEmail, dateRange);
 
+				res.ShouldNotBeNull();
 				res.Sum(r => r.Hours).ShouldBe(40);
 			}
 
@@ -117,31 +120,23 @@ public class MementoIntegrationTests
 				InclusiveDateRange dateRange = new(startDate, endDate);
 				
 				IMementoClient client = GetMementoClient();
-				List<MementoTimeEntry> res = await client.GetTimeEntriesForUser(testUserEmail, dateRange);
+				MementoTimeSheet res = await client.GetTimeSheetForUser(testUserEmail, dateRange);
 
 				res.ShouldNotBeNull();
 				res.ShouldBeEmpty();
 			}
-		}
-	}
-	
-	public class GivenIDontHaveAnAuthenticationKey
-	{
-		public class WhenIAttemptToGetTheUserList
-		{
+			
 			[Fact]
-			public async Task ThenANotAuthorizedExceptionIsThrown()
+			public async Task ThenDateRangeIsSetCorrectly()
 			{
+				const string testUserEmail = "james.hughes@codurance.com";
+				InclusiveDateRange dateRange = new(new(2022, 06, 27), new(2022, 07, 01));
 				
-			}
-		}
-		
-		public class WhenIAttemptToGetActivitiesForAUser
-		{
-			[Fact]
-			public async Task ThenANotAuthorizedExceptionIsThrown()
-			{
-				
+				IMementoClient client = GetMementoClient();
+				MementoTimeSheet res = await client.GetTimeSheetForUser(testUserEmail, dateRange);
+
+				res.ShouldNotBeNull();
+				res.DateRange.ShouldBe(dateRange);
 			}
 		}
 	}

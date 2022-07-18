@@ -15,13 +15,13 @@ namespace MementoNagBot.Tests.Services;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class MementoReminderServiceTests
 {
-	private static IOptions<MementoOptions> _options = Options.Create(new MementoOptions { WhiteList = "WhiteList0, WhiteList1,WhiteList2" }); // Odd spacing is deliberate
+	private static readonly IOptions<MementoOptions> Options = Microsoft.Extensions.Options.Options.Create(new MementoOptions { WhiteList = "WhiteList0, WhiteList1,WhiteList2" }); // Odd spacing is deliberate
 	public class GivenTomorrowIsMonthEnd
 	{
 		private static readonly DateProviderStub DateStub = new(new(2022, 06, 29)); // Wednesday with month-end on Thursday
 		private const int DaysInWeek = 4;
 		private const int HoursInDay = 8;
-		private const int HoursInWeek = DaysInWeek * HoursInDay;
+
 		public class WhenISendAGeneralReminder
 		{
 			[Fact]
@@ -29,7 +29,7 @@ public class MementoReminderServiceTests
 			{
 				SlackMessageServiceStub messageStub = new(null!, null!);
 				DateProviderStub dateStub = new(new(2022, 07, 15));
-				MementoReminderService service = new(messageStub, null!, dateStub, _options);
+				MementoReminderService service = new(messageStub, null!, dateStub, Options);
 
 				await service.SendGeneralReminder(true);
 
@@ -45,10 +45,10 @@ public class MementoReminderServiceTests
 			[Fact]
 			public async Task ThenTheIndividualMessageMonthEndTemplateIsUsed()
 			{
-				Dictionary<MementoUser, List<MementoTimeEntry>> testData = GetTestData(DaysInWeek, HoursInDay);
+				Dictionary<MementoUser, MementoTimeSheet> testData = GetTestData(DaysInWeek, HoursInDay);
 				List<string> reminderMessages = testData
 					.Where(td => !td.Key.Email.Contains("WhiteList"))
-					.Where(td => td.Value.Sum(te => te.Hours) != HoursInWeek)
+					.Where(td => !td.Value.IsComplete())
 					.Select(td => string.Format(MementoReminderService.MonthEndIndividualReminderTemplate, td.Key.Name.Split(' ')[0]))
 					.ToList();
 
@@ -56,12 +56,12 @@ public class MementoReminderServiceTests
 				
 				IMementoClient client = Substitute.For<IMementoClient>();
 				client.GetActiveInternalUsers().Returns(testData.Keys.ToList());
-				foreach (KeyValuePair<MementoUser, List<MementoTimeEntry>> userTimeEntryPair in testData)
+				foreach (KeyValuePair<MementoUser, MementoTimeSheet> userTimeEntryPair in testData)
 				{
-					client.GetTimeEntriesForUser(userTimeEntryPair.Key.Email, Arg.Any<InclusiveDateRange>())
+					client.GetTimeSheetForUser(userTimeEntryPair.Key.Email, Arg.Any<InclusiveDateRange>())
 						.Returns(userTimeEntryPair.Value);
 				}
-				MementoReminderService service = new(messageStub, client, DateStub, _options);
+				MementoReminderService service = new(messageStub, client, DateStub, Options);
 				
 				await service.SendIndividualReminders(true);
 				
@@ -75,22 +75,22 @@ public class MementoReminderServiceTests
 			[Fact]
 			public async Task ThenAllUsersWithoutFullTimesheetsShouldBeMessaged()
 			{
-				Dictionary<MementoUser, List<MementoTimeEntry>> testData = GetTestData(DaysInWeek, HoursInDay);
+				Dictionary<MementoUser, MementoTimeSheet> testData = GetTestData(DaysInWeek, HoursInDay);
 				List<string> emailsExpectedToHaveReceivedAMessage = testData
 					.Where(td => !td.Key.Email.Contains("WhiteList"))
-					.Where(td => td.Value.Sum(te => te.Hours) != HoursInWeek)
+					.Where(td => !td.Value.IsComplete())
 					.Select(td => td.Key.Email)
 					.ToList();
 				
 				SlackMessageServiceStub messageStub = new(null!, null!);
 				IMementoClient client = Substitute.For<IMementoClient>();
 				client.GetActiveInternalUsers().Returns(testData.Keys.ToList());
-				foreach (KeyValuePair<MementoUser, List<MementoTimeEntry>> userTimeEntryPair in testData)
+				foreach (KeyValuePair<MementoUser, MementoTimeSheet> userTimeEntryPair in testData)
 				{
-					client.GetTimeEntriesForUser(userTimeEntryPair.Key.Email, Arg.Any<InclusiveDateRange>())
+					client.GetTimeSheetForUser(userTimeEntryPair.Key.Email, Arg.Any<InclusiveDateRange>())
 						.Returns(userTimeEntryPair.Value);
 				}
-				MementoReminderService service = new(messageStub, client, DateStub, _options);
+				MementoReminderService service = new(messageStub, client, DateStub, Options);
 				
 				await service.SendIndividualReminders(true);
 
@@ -104,18 +104,18 @@ public class MementoReminderServiceTests
 			[Fact]
 			public async Task ThenNoWhitelistedUsersShouldBeMessaged()
 			{
-				Dictionary<MementoUser, List<MementoTimeEntry>> testData = GetTestData(DaysInWeek, HoursInDay);
+				Dictionary<MementoUser, MementoTimeSheet> testData = GetTestData(DaysInWeek, HoursInDay);
 				List<string> whitelistedUsers = testData.Keys.Select(u => u.Email).Where(u => u.Contains("WhiteList")).ToList();
 				
 				SlackMessageServiceStub messageStub = new(null!, null!);
 				IMementoClient client = Substitute.For<IMementoClient>();
 				client.GetActiveInternalUsers().Returns(testData.Keys.ToList());
-				foreach (KeyValuePair<MementoUser, List<MementoTimeEntry>> userTimeEntryPair in testData)
+				foreach (KeyValuePair<MementoUser, MementoTimeSheet> userTimeEntryPair in testData)
 				{
-					client.GetTimeEntriesForUser(userTimeEntryPair.Key.Email, Arg.Any<InclusiveDateRange>())
+					client.GetTimeSheetForUser(userTimeEntryPair.Key.Email, Arg.Any<InclusiveDateRange>())
 						.Returns(userTimeEntryPair.Value);
 				}
-				MementoReminderService service = new(messageStub, client, DateStub, _options);
+				MementoReminderService service = new(messageStub, client, DateStub, Options);
 				
 				await service.SendIndividualReminders(true);
 				
@@ -129,14 +129,14 @@ public class MementoReminderServiceTests
 		private static readonly DateProviderStub DateStub = new(new(2022, 07, 15));
 		private const int DaysInWeek = 5;
 		private const int HoursInDay = 8;
-		private const int HoursInWeek = DaysInWeek * HoursInDay;
+
 		public class WhenISendAGeneralReminder
 		{
 			[Fact]
 			public async Task ThenTheGeneralReminderMessageIsSent()
 			{
 				SlackMessageServiceStub messageStub = new(null!, null!);
-				MementoReminderService service = new(messageStub, null!, DateStub, _options);
+				MementoReminderService service = new(messageStub, null!, DateStub, Options);
 
 				await service.SendGeneralReminder(false);
 
@@ -153,10 +153,10 @@ public class MementoReminderServiceTests
 			[Fact]
 			public async Task ThenTheIndividualGeneralTemplateIsUsed()
 			{
-				Dictionary<MementoUser, List<MementoTimeEntry>> testData = GetTestData(DaysInWeek, HoursInDay);
+				Dictionary<MementoUser, MementoTimeSheet> testData = GetTestData(DaysInWeek, HoursInDay);
 				List<string> reminderMessages = testData
 					.Where(td => !td.Key.Email.Contains("WhiteList"))
-					.Where(td => td.Value.Sum(te => te.Hours) != HoursInWeek)
+					.Where(td => !td.Value.IsComplete())
 					.Select(td => string.Format(MementoReminderService.IndividualReminderTemplate, td.Key.Name.Split(' ')[0]))
 					.ToList();
 
@@ -164,12 +164,12 @@ public class MementoReminderServiceTests
 				
 				IMementoClient client = Substitute.For<IMementoClient>();
 				client.GetActiveInternalUsers().Returns(testData.Keys.ToList());
-				foreach (KeyValuePair<MementoUser, List<MementoTimeEntry>> userTimeEntryPair in testData)
+				foreach (KeyValuePair<MementoUser, MementoTimeSheet> userTimeEntryPair in testData)
 				{
-					client.GetTimeEntriesForUser(userTimeEntryPair.Key.Email, Arg.Any<InclusiveDateRange>())
+					client.GetTimeSheetForUser(userTimeEntryPair.Key.Email, Arg.Any<InclusiveDateRange>())
 						.Returns(userTimeEntryPair.Value);
 				}
-				MementoReminderService service = new(messageStub, client, DateStub, _options);
+				MementoReminderService service = new(messageStub, client, DateStub, Options);
 				
 				await service.SendIndividualReminders(false);
 				
@@ -183,22 +183,22 @@ public class MementoReminderServiceTests
 			[Fact]
 			public async Task ThenAllUsersWithoutFullTimesheetsShouldBeMessaged()
 			{
-				Dictionary<MementoUser, List<MementoTimeEntry>> testData = GetTestData(DaysInWeek, HoursInDay);
+				Dictionary<MementoUser, MementoTimeSheet> testData = GetTestData(DaysInWeek, HoursInDay);
 				List<string> emailsExpectedToHaveReceivedAMessage = testData
 					.Where(td => !td.Key.Email.Contains("WhiteList"))
-					.Where(td => td.Value.Sum(te => te.Hours) != HoursInWeek)
+					.Where(td => !td.Value.IsComplete())
 					.Select(td => td.Key.Email)
 					.ToList();
 				
 				SlackMessageServiceStub messageStub = new(null!, null!);
 				IMementoClient client = Substitute.For<IMementoClient>();
 				client.GetActiveInternalUsers().Returns(testData.Keys.ToList());
-				foreach (KeyValuePair<MementoUser, List<MementoTimeEntry>> userTimeEntryPair in testData)
+				foreach (KeyValuePair<MementoUser, MementoTimeSheet> userTimeEntryPair in testData)
 				{
-					client.GetTimeEntriesForUser(userTimeEntryPair.Key.Email, Arg.Any<InclusiveDateRange>())
+					client.GetTimeSheetForUser(userTimeEntryPair.Key.Email, Arg.Any<InclusiveDateRange>())
 						.Returns(userTimeEntryPair.Value);
 				}
-				MementoReminderService service = new(messageStub, client, DateStub, _options);
+				MementoReminderService service = new(messageStub, client, DateStub, Options);
 				
 				await service.SendIndividualReminders(false);
 
@@ -212,18 +212,18 @@ public class MementoReminderServiceTests
 			[Fact]
 			public async Task ThenNoWhitelistedUsersShouldBeMessaged()
 			{
-				Dictionary<MementoUser, List<MementoTimeEntry>> testData = GetTestData(DaysInWeek, HoursInDay);
+				Dictionary<MementoUser, MementoTimeSheet> testData = GetTestData(DaysInWeek, HoursInDay);
 				List<string> whitelistedUsers = testData.Keys.Select(u => u.Email).Where(u => u.Contains("WhiteList")).ToList();
 				
 				SlackMessageServiceStub messageStub = new(null!, null!);
 				IMementoClient client = Substitute.For<IMementoClient>();
 				client.GetActiveInternalUsers().Returns(testData.Keys.ToList());
-				foreach (KeyValuePair<MementoUser, List<MementoTimeEntry>> userTimeEntryPair in testData)
+				foreach (KeyValuePair<MementoUser, MementoTimeSheet> userTimeEntryPair in testData)
 				{
-					client.GetTimeEntriesForUser(userTimeEntryPair.Key.Email, Arg.Any<InclusiveDateRange>())
+					client.GetTimeSheetForUser(userTimeEntryPair.Key.Email, Arg.Any<InclusiveDateRange>())
 						.Returns(userTimeEntryPair.Value);
 				}
-				MementoReminderService service = new(messageStub, client, DateStub, _options);
+				MementoReminderService service = new(messageStub, client, DateStub, Options);
 				
 				await service.SendIndividualReminders(false);
 				
@@ -232,9 +232,10 @@ public class MementoReminderServiceTests
 		}
 	}
 	
-	private static Dictionary<MementoUser, List<MementoTimeEntry>> GetTestData(int daysInWeek, int hoursInDay)
+	private static Dictionary<MementoUser, MementoTimeSheet> GetTestData(int daysInWeek, int hoursInDay)
 	{
-		Dictionary<MementoUser, List<MementoTimeEntry>> userTimeEntries = new();
+		Dictionary<MementoUser, MementoTimeSheet> usertimeSheet = new();
+		InclusiveDateRange range = new(new(2022,01,04), new(2022, 01, 08));
 				
 		Fixture fixture = new();
 		fixture.Customize<DateOnly>(composer => composer.FromFactory<DateTime>(DateOnly.FromDateTime));
@@ -244,14 +245,14 @@ public class MementoReminderServiceTests
 		for (int i = 0; i < 3; i++)
 		{
 			MementoUser user = fixture.Create<MementoUser>();
-			List<MementoTimeEntry> timeEntries = new();
+			MementoTimeSheet timeSheet = new(range);
 			for (int j = 0; j < daysInWeek; j++)
 			{
 				MementoTimeEntry entry = fixture.Create<MementoTimeEntry>();
 				entry = entry with { Hours = hoursInDay, ActivityDate = new(2022, 01, 04 + j) }; // First week that started with a Monday
-				timeEntries.Add(entry);
+				timeSheet.Add(entry);
 			}
-			userTimeEntries.Add(user, timeEntries);
+			usertimeSheet.Add(user, timeSheet);
 		}
 
 		// Generate three people with half-timesheets
@@ -259,14 +260,14 @@ public class MementoReminderServiceTests
 		for (int i = 0; i < 3; i++)
 		{
 			MementoUser user = fixture.Create<MementoUser>();
-			List<MementoTimeEntry> timeEntries = new();
+			MementoTimeSheet timeSheet = new(range);
 			for (int j = 0; j < daysInWeek; j++)
 			{
 				MementoTimeEntry entry = fixture.Create<MementoTimeEntry>();
 				entry = entry with { Hours = hoursInDay / 2, ActivityDate = new(2022, 01, 04 + j) }; // First week that started with a Monday
-				timeEntries.Add(entry);
+				timeSheet.Add(entry);
 			}
-			userTimeEntries.Add(user, timeEntries);
+			usertimeSheet.Add(user, timeSheet);
 		}
 				
 		// Generate three people with no-timesheet
@@ -274,8 +275,8 @@ public class MementoReminderServiceTests
 		for (int i = 0; i < 3; i++)
 		{
 			MementoUser user = fixture.Create<MementoUser>();
-			List<MementoTimeEntry> timeEntries = new();
-			userTimeEntries.Add(user, timeEntries);
+			MementoTimeSheet timeSheet = new(range);
+			usertimeSheet.Add(user, timeSheet);
 		}
 		
 		// Generate three whitelisted people with no-timesheet
@@ -284,10 +285,10 @@ public class MementoReminderServiceTests
 		{
 			MementoUser user = fixture.Create<MementoUser>();
 			user = user with { Email = $"WhiteList{i}" };
-			List<MementoTimeEntry> timeEntries = new();
-			userTimeEntries.Add(user, timeEntries);
+			MementoTimeSheet timeSheet = new(range);
+			usertimeSheet.Add(user, timeSheet);
 		}
 
-		return userTimeEntries;
+		return usertimeSheet;
 	}
 }

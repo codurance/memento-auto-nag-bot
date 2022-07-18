@@ -29,7 +29,7 @@ public class MementoClient: IMementoClient
 			.ToList();
 	}
 
-	public async Task<List<MementoTimeEntry>> GetTimeEntriesForUser(string userId, InclusiveDateRange dateRange)
+	public async Task<MementoTimeSheet> GetTimeSheetForUser(string userId, InclusiveDateRange dateRange)
 	{
 		NameValueCollection query = System.Web.HttpUtility.ParseQueryString(string.Empty);
 		query.Add("start", dateRange.StartDate.ToString("yyyy-MM-dd"));
@@ -38,6 +38,8 @@ public class MementoClient: IMementoClient
 
 		List<MementoTimeEntry>? entries = await _client.GetFromJsonAsync<List<MementoTimeEntry>>($"user/{userId}/timeentries?{queryString}");
 
-		return entries?.OrderBy(e => e.ActivityDate).ToList() ?? new();
+		MementoTimeSheet timeSheet = new(dateRange, entries);
+
+		return timeSheet;
 	}
 }

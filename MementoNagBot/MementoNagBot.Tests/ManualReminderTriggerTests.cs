@@ -29,7 +29,7 @@ public class ManualReminderTriggerTests
 	        ManualReminderTrigger trigger = new(service);
 	        HttpRequest req = new DefaultHttpRequest(new DefaultHttpContext());
 	        req.QueryString = new("?path=channel");
-	        IActionResult? res = await trigger.RunAsync(req, null);
+	        IActionResult res = await trigger.RunAsync(req, null!);
 	        res.ShouldBeAssignableTo<OkResult>();
 	        await client.Received(1).PostMessageAsync(channel, "What is the answer to life, the universe, and everything?");
         }
@@ -51,12 +51,12 @@ public class ManualReminderTriggerTests
 	        ISlackClient client = Substitute.For<ISlackClient>();
 	        client.PostMessageAsync(Arg.Any<string>(), Arg.Any<string>()).Returns(Task.FromResult(new PostMessageResponse { ok = true }));
 	        client.GetUserByEmailAsync(jamesEmail).Returns(Task.FromResult(response));
-	        IOptions<BotOptions> options = Microsoft.Extensions.Options.Options.Create(new BotOptions{BotChannel = channel});
+	        IOptions<BotOptions> options = Options.Create(new BotOptions{BotChannel = channel});
 	        SlackMessageService service = new(client, options);
 	        ManualReminderTrigger trigger = new(service);
 	        HttpRequest req = new DefaultHttpRequest(new DefaultHttpContext());
 	        req.QueryString = new("?path=direct");
-	        IActionResult? res = await trigger.RunAsync(req, null);
+	        IActionResult res = await trigger.RunAsync(req, null!);
 	        res.ShouldBeAssignableTo<OkResult>();
 	        await client.Received(1).PostMessageAsync(response.user.id, "If I'm 555 then you're 666");
         }

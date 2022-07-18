@@ -1,8 +1,10 @@
 using System.Text.Json.Serialization;
+using JetBrains.Annotations;
 using MementoNagBot.Converters;
 
 namespace MementoNagBot.Models.Memento;
 
+[UsedImplicitly]
 public record MementoTimeEntry
 (
 	Guid Id,
