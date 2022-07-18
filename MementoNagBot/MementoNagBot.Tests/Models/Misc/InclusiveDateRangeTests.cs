@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
-using AutoFixture;
 using MementoNagBot.Models.Misc;
+using MementoNagBot.Tests.TestDataGenerators;
 
 namespace MementoNagBot.Tests.Models.Misc;
 
@@ -49,25 +49,6 @@ public class InclusiveDateRangeTests
 
 				testRange.Distinct().Count().ShouldBe(expectedDays);
 			}
-		}
-	}
-
-	private static class DateRangeTestGenerator
-	{
-		public static IEnumerable<object[]> GenerateDateRanges(int numRanges)
-		{
-			Fixture fixture = new();
-			fixture.Customize<DateOnly>(composer => composer.FromFactory<DateTime>(DateOnly.FromDateTime));
-
-			List<InclusiveDateRange> dateRanges = new();
-
-			for (int i = 0; i < numRanges; i++)
-			{
-				DateOnly[] dates = fixture.CreateMany<DateTime>(2).Select(DateOnly.FromDateTime).ToArray();
-				dateRanges.Add(new(dates.Min(), dates.Max()));
-			}
-
-			return dateRanges.Select(d => new object[] { d });
 		}
 	}
 }
