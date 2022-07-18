@@ -8,4 +8,5 @@ public interface IMementoClient
 {
 	public Task<List<MementoUser>> GetActiveInternalUsers();
 	public Task<List<MementoTimeEntry>> GetTimeEntriesForUser(string userId, InclusiveDateRange dateRange);
+	public Task<MementoTimeSheet?> GetTimeSheetForUser(string userId, InclusiveDateRange dateRange);
 }

@@ -40,4 +40,16 @@ public class MementoClient: IMementoClient
 
 		return entries?.OrderBy(e => e.ActivityDate).ToList() ?? new();
 	}
+
+	public async Task<MementoTimeSheet?> GetTimeSheetForUser(string userId, InclusiveDateRange dateRange)
+	{
+		NameValueCollection query = System.Web.HttpUtility.ParseQueryString(string.Empty);
+		query.Add("start", dateRange.StartDate.ToString("yyyy-MM-dd"));
+		query.Add("end", dateRange.EndDate.ToString("yyyy-MM-dd"));
+		string queryString = query.ToString() ?? string.Empty;
+
+		MementoTimeSheet? timeSheet = await _client.GetFromJsonAsync<MementoTimeSheet>($"user/{userId}/timeentries?{queryString}");
+
+		return timeSheet;
+	}
 }

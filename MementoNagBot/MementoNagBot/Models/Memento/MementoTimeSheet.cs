@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using MementoNagBot.Models.Misc;
 
 namespace MementoNagBot.Models.Memento;
@@ -10,6 +11,13 @@ public class MementoTimeSheet: ICollection<MementoTimeEntry>
 	private readonly List<MementoTimeEntry> _innerList;
 	private readonly InclusiveDateRange _dateRange;
 	private readonly int _hoursInDay;
+
+	[UsedImplicitly] // Used by .GetFromJsonAsync() in MementoClient
+	public MementoTimeSheet()
+	{
+		_dateRange = new(DateOnly.MinValue, DateOnly.MinValue);
+		_innerList = new();
+	}
 
 	public MementoTimeSheet(InclusiveDateRange dateRange, int hoursInDay = 8)
 	{
@@ -37,7 +45,7 @@ public class MementoTimeSheet: ICollection<MementoTimeEntry>
 		return true;
 	} 
 
-	public IEnumerator<MementoTimeEntry> GetEnumerator() => _innerList.GetEnumerator();
+	public IEnumerator<MementoTimeEntry> GetEnumerator() => _innerList.OrderBy(te => te.ActivityDate).GetEnumerator();
 
 	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
