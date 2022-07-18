@@ -9,40 +9,7 @@ public class InclusiveDateRangeTests
 {
 	public class GivenADateRange
 	{
-		public class WhenIGetAllDaysInRange
-		{
-			[Theory]
-			[MemberData(nameof(DateRangeTestGenerator.GenerateDateRanges), 10, MemberType = typeof(DateRangeTestGenerator))]
-			public void ThenTheStartDateIsIncluded(InclusiveDateRange testRange)
-			{
-				List<DateOnly> dates = testRange.GetDaysInRange();
-				dates.ShouldContain(testRange.StartDate);
-			}
-
-			[Theory]
-			[MemberData(nameof(DateRangeTestGenerator.GenerateDateRanges), 10, MemberType = typeof(DateRangeTestGenerator))]
-			public void ThenTheEndDateIsIncluded(InclusiveDateRange testRange)
-			{
-				List<DateOnly> dates = testRange.GetDaysInRange();
-				dates.ShouldContain(testRange.EndDate);
-			}
-
-			[Theory]
-			[MemberData(nameof(DateRangeTestGenerator.GenerateDateRanges), 10, MemberType = typeof(DateRangeTestGenerator))]
-			public void ThenEveryDayBetweenIsIncluded(InclusiveDateRange testRange)
-			{
-				int expectedDays = (int)(testRange.EndDate.ToDateTime(TimeOnly.MinValue) -
-				                         testRange.StartDate.ToDateTime(TimeOnly.MinValue)).TotalDays + 1;
-
-				List<DateOnly> dates = testRange.GetDaysInRange();
-
-				dates.Distinct().Count().ShouldBe(expectedDays);
-			}
-
-
-		}
-		
-		public class WhenIGetTheIterator
+		public class WhenIIterateOverIt
 		{
 			[Theory]
 			[MemberData(nameof(DateRangeTestGenerator.GenerateDateRanges), 10, MemberType = typeof(DateRangeTestGenerator))]
@@ -57,6 +24,30 @@ public class InclusiveDateRangeTests
 					date.ShouldBe(lastDate.AddDays(1));
 					lastDate = date;
 				}
+			}
+			
+			[Theory]
+			[MemberData(nameof(DateRangeTestGenerator.GenerateDateRanges), 10, MemberType = typeof(DateRangeTestGenerator))]
+			public void ThenTheStartDateIsIncluded(InclusiveDateRange testRange)
+			{
+				testRange.ShouldContain(testRange.StartDate);
+			}
+
+			[Theory]
+			[MemberData(nameof(DateRangeTestGenerator.GenerateDateRanges), 10, MemberType = typeof(DateRangeTestGenerator))]
+			public void ThenTheEndDateIsIncluded(InclusiveDateRange testRange)
+			{
+				testRange.ShouldContain(testRange.EndDate);
+			}
+
+			[Theory]
+			[MemberData(nameof(DateRangeTestGenerator.GenerateDateRanges), 10, MemberType = typeof(DateRangeTestGenerator))]
+			public void ThenEveryDayBetweenIsIncluded(InclusiveDateRange testRange)
+			{
+				int expectedDays = (int)(testRange.EndDate.ToDateTime(TimeOnly.MinValue) -
+				                         testRange.StartDate.ToDateTime(TimeOnly.MinValue)).TotalDays + 1;
+
+				testRange.Distinct().Count().ShouldBe(expectedDays);
 			}
 		}
 	}
