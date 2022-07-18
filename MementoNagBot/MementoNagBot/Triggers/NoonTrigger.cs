@@ -26,7 +26,7 @@ public class NoonTrigger
 		{
 			case CanRunResult.CanRunTomorrowLastDay:
 				await _reminderService.SendGeneralReminder(true);
-				break;
+				return;
 			case CanRunResult.CanRunFriday:
 				await _reminderService.SendGeneralReminder(false);
 				return;
