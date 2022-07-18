@@ -18,7 +18,7 @@ public static class TimeSheetTestGenerator
 			DateOnly startDate = GetWeekStart(endDate);
 			InclusiveDateRange range = new(startDate, endDate);
 
-			MementoTimeSheet timeSheet = new(range, hoursInDay);
+			MementoTimeSheet timeSheet = new(range, null, hoursInDay);
 
 			foreach (DateOnly date in range)
 			{
@@ -54,7 +54,7 @@ public static class TimeSheetTestGenerator
 			DateOnly startDate = GetWeekStart(endDate);
 			InclusiveDateRange range = new(startDate, endDate);
 
-			MementoTimeSheet timeSheet = new(range, hoursInDay);
+			MementoTimeSheet timeSheet = new(range, null, hoursInDay);
 
 			foreach (DateOnly date in range)
 			{

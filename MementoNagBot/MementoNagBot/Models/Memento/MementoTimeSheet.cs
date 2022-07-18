@@ -8,22 +8,14 @@ namespace MementoNagBot.Models.Memento;
 
 public class MementoTimeSheet: ICollection<MementoTimeEntry>
 {
+	public InclusiveDateRange DateRange { get; }
 	private readonly List<MementoTimeEntry> _innerList;
-	private readonly InclusiveDateRange _dateRange;
 	private readonly int _hoursInDay;
 
-	[UsedImplicitly] // Used by .GetFromJsonAsync() in MementoClient
-	public MementoTimeSheet()
+	public MementoTimeSheet(InclusiveDateRange dateRange, IEnumerable<MementoTimeEntry>? entries = null, int hoursInDay = 8)
 	{
-		_dateRange = new(DateOnly.MinValue, DateOnly.MinValue);
-		_innerList = new();
-		_hoursInDay = 8;
-	}
-
-	public MementoTimeSheet(InclusiveDateRange dateRange, int hoursInDay = 8)
-	{
-		_innerList = new();
-		_dateRange = dateRange;
+		_innerList = new(entries ?? new List<MementoTimeEntry>());
+		DateRange = dateRange;
 		_hoursInDay = hoursInDay;
 	}
 	
@@ -37,7 +29,7 @@ public class MementoTimeSheet: ICollection<MementoTimeEntry>
 			.GroupBy(te => te.ActivityDate)
 			.ToDictionary(k => k.Key, v => v.ToList());
 		
-		foreach (DateOnly date in _dateRange.Where(d => d.DayOfWeek is not DayOfWeek.Saturday or DayOfWeek.Sunday))
+		foreach (DateOnly date in DateRange.Where(d => d.DayOfWeek is not DayOfWeek.Saturday or DayOfWeek.Sunday))
 		{
 			if (!timeEntriesByDay.TryGetValue(date, out List<MementoTimeEntry>? timeEntries)) return false;
 			if (timeEntries.Sum(te => te.Hours) < _hoursInDay) return false;

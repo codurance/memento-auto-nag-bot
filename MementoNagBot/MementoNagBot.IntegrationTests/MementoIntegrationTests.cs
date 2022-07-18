@@ -125,26 +125,18 @@ public class MementoIntegrationTests
 				res.ShouldNotBeNull();
 				res.ShouldBeEmpty();
 			}
-		}
-	}
-	
-	public class GivenIDontHaveAnAuthenticationKey
-	{
-		public class WhenIAttemptToGetTheUserList
-		{
+			
 			[Fact]
-			public async Task ThenANotAuthorizedExceptionIsThrown()
+			public async Task ThenDateRangeIsSetCorrectly()
 			{
+				const string testUserEmail = "james.hughes@codurance.com";
+				InclusiveDateRange dateRange = new(new(2022, 06, 27), new(2022, 07, 01));
 				
-			}
-		}
-		
-		public class WhenIAttemptToGetActivitiesForAUser
-		{
-			[Fact]
-			public async Task ThenANotAuthorizedExceptionIsThrown()
-			{
-				
+				IMementoClient client = GetMementoClient();
+				MementoTimeSheet? res = await client.GetTimeSheetForUser(testUserEmail, dateRange);
+
+				res.ShouldNotBeNull();
+				res.DateRange.ShouldBe(dateRange);
 			}
 		}
 	}

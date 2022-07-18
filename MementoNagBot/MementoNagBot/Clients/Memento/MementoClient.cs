@@ -29,14 +29,16 @@ public class MementoClient: IMementoClient
 			.ToList();
 	}
 
-	public async Task<MementoTimeSheet?> GetTimeSheetForUser(string userId, InclusiveDateRange dateRange)
+	public async Task<MementoTimeSheet> GetTimeSheetForUser(string userId, InclusiveDateRange dateRange)
 	{
 		NameValueCollection query = System.Web.HttpUtility.ParseQueryString(string.Empty);
 		query.Add("start", dateRange.StartDate.ToString("yyyy-MM-dd"));
 		query.Add("end", dateRange.EndDate.ToString("yyyy-MM-dd"));
 		string queryString = query.ToString() ?? string.Empty;
 
-		MementoTimeSheet? timeSheet = await _client.GetFromJsonAsync<MementoTimeSheet>($"user/{userId}/timeentries?{queryString}");
+		List<MementoTimeEntry>? entries = await _client.GetFromJsonAsync<List<MementoTimeEntry>>($"user/{userId}/timeentries?{queryString}");
+
+		MementoTimeSheet timeSheet = new(dateRange, entries);
 
 		return timeSheet;
 	}

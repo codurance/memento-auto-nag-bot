@@ -48,7 +48,7 @@ public class MementoReminderServiceTests
 				Dictionary<MementoUser, MementoTimeSheet> testData = GetTestData(DaysInWeek, HoursInDay);
 				List<string> reminderMessages = testData
 					.Where(td => !td.Key.Email.Contains("WhiteList"))
-					.Where(td => td.Value.Sum(te => te.Hours) != HoursInWeek)
+					.Where(td => !td.Value.IsComplete())
 					.Select(td => string.Format(MementoReminderService.MonthEndIndividualReminderTemplate, td.Key.Name.Split(' ')[0]))
 					.ToList();
 
@@ -78,7 +78,7 @@ public class MementoReminderServiceTests
 				Dictionary<MementoUser, MementoTimeSheet> testData = GetTestData(DaysInWeek, HoursInDay);
 				List<string> emailsExpectedToHaveReceivedAMessage = testData
 					.Where(td => !td.Key.Email.Contains("WhiteList"))
-					.Where(td => td.Value.Sum(te => te.Hours) != HoursInWeek)
+					.Where(td => !td.Value.IsComplete())
 					.Select(td => td.Key.Email)
 					.ToList();
 				
@@ -156,7 +156,7 @@ public class MementoReminderServiceTests
 				Dictionary<MementoUser, MementoTimeSheet> testData = GetTestData(DaysInWeek, HoursInDay);
 				List<string> reminderMessages = testData
 					.Where(td => !td.Key.Email.Contains("WhiteList"))
-					.Where(td => td.Value.Sum(te => te.Hours) != HoursInWeek)
+					.Where(td => !td.Value.IsComplete())
 					.Select(td => string.Format(MementoReminderService.IndividualReminderTemplate, td.Key.Name.Split(' ')[0]))
 					.ToList();
 
@@ -186,7 +186,7 @@ public class MementoReminderServiceTests
 				Dictionary<MementoUser, MementoTimeSheet> testData = GetTestData(DaysInWeek, HoursInDay);
 				List<string> emailsExpectedToHaveReceivedAMessage = testData
 					.Where(td => !td.Key.Email.Contains("WhiteList"))
-					.Where(td => td.Value.Sum(te => te.Hours) != HoursInWeek)
+					.Where(td => !td.Value.IsComplete())
 					.Select(td => td.Key.Email)
 					.ToList();
 				
@@ -235,6 +235,7 @@ public class MementoReminderServiceTests
 	private static Dictionary<MementoUser, MementoTimeSheet> GetTestData(int daysInWeek, int hoursInDay)
 	{
 		Dictionary<MementoUser, MementoTimeSheet> usertimeSheet = new();
+		InclusiveDateRange range = new(new(2022,01,04), new(2022, 01, 08));
 				
 		Fixture fixture = new();
 		fixture.Customize<DateOnly>(composer => composer.FromFactory<DateTime>(DateOnly.FromDateTime));
@@ -244,7 +245,7 @@ public class MementoReminderServiceTests
 		for (int i = 0; i < 3; i++)
 		{
 			MementoUser user = fixture.Create<MementoUser>();
-			MementoTimeSheet timeSheet = new();
+			MementoTimeSheet timeSheet = new(range);
 			for (int j = 0; j < daysInWeek; j++)
 			{
 				MementoTimeEntry entry = fixture.Create<MementoTimeEntry>();
@@ -259,7 +260,7 @@ public class MementoReminderServiceTests
 		for (int i = 0; i < 3; i++)
 		{
 			MementoUser user = fixture.Create<MementoUser>();
-			MementoTimeSheet timeSheet = new();
+			MementoTimeSheet timeSheet = new(range);
 			for (int j = 0; j < daysInWeek; j++)
 			{
 				MementoTimeEntry entry = fixture.Create<MementoTimeEntry>();
@@ -274,7 +275,7 @@ public class MementoReminderServiceTests
 		for (int i = 0; i < 3; i++)
 		{
 			MementoUser user = fixture.Create<MementoUser>();
-			MementoTimeSheet timeSheet = new();
+			MementoTimeSheet timeSheet = new(range);
 			usertimeSheet.Add(user, timeSheet);
 		}
 		
@@ -284,7 +285,7 @@ public class MementoReminderServiceTests
 		{
 			MementoUser user = fixture.Create<MementoUser>();
 			user = user with { Email = $"WhiteList{i}" };
-			MementoTimeSheet timeSheet = new();
+			MementoTimeSheet timeSheet = new(range);
 			usertimeSheet.Add(user, timeSheet);
 		}
 

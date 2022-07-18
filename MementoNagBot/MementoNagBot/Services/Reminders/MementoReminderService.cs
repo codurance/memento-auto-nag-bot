@@ -50,16 +50,15 @@ public class MementoReminderService
 
 		foreach (MementoUser user in users)
 		{
-			MementoTimeSheet? timeEntries = await _mementoClient.GetTimeSheetForUser(user.Email, dateRange);
+			MementoTimeSheet? timeSheet = await _mementoClient.GetTimeSheetForUser(user.Email, dateRange);
 
-			if (timeEntries is null)
+			if (timeSheet is null)
 			{
 				// TODO - Log out warning because we're not that worried unless we get a lot of these
 				continue;
 			}
-			
-			bool fullTimeSheet = timeEntries.Sum(te => te.Hours) >= dateRange.TotalDays * 8;
-			if (fullTimeSheet) continue;
+
+			if (timeSheet.IsComplete()) continue;
 			
 			string template = tomorrowIsLastDay ? MonthEndIndividualReminderTemplate : IndividualReminderTemplate;
 			string message = string.Format(template, user.Name.Split(' ')[0]);
