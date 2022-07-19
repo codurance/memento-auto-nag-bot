@@ -6,6 +6,7 @@ using MementoNagBot.Models.Misc;
 using MementoNagBot.Models.Options;
 using MementoNagBot.Providers.DateTimes;
 using MementoNagBot.Services.Messaging;
+using MementoNagBot.Services.Translation;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -16,21 +17,23 @@ public class MementoReminderService
 	private readonly SlackMessageService _messageService;
 	private readonly IMementoClient _mementoClient;
 	private readonly IDateProvider _dateProvider;
+	private readonly ITranslatedResourceService _translatedResourceService;
 	private readonly IOptions<MementoOptions> _options;
 	private readonly ILogger<MementoReminderService> _logger;
-
-
-	//TODO - Making these public for now, as when I add the translation service, they'll be injected. Just makes this iteration easier.
-	public const string GeneralReminderText = "Hi everyone, it's that time of week again, could you please make sure your Memento is up to date!";
-	public const string MonthEndReminderText = "Hi everyone, tomorrow is month end, could you please make sure that your Memento is up to date and remember to fill it out for tomorrow too!";
-	public const string IndividualReminderTemplate = "Hi {0}, it looks like you've forgotten to fill out your Memento. We know you're busy but we really need it to be kept up to date for billing purposes. So please could you ensure it's updated as soon as possible! If you're having difficulties doing so, please reach out to your manager!";
-	public const string MonthEndIndividualReminderTemplate = "Hi {0}, it looks like you've forgotten to fill out your Memento. We know you're busy but we really need it to be kept up to date for billing purposes. So please could you ensure it's updated as soon as possible! Please also remember to fill out tomorrow as it's month end. If you're having difficulties doing so, please reach out to your manager!";
-
-	public MementoReminderService(SlackMessageService messageService, IMementoClient mementoClient, IDateProvider dateProvider, IOptions<MementoOptions> options, ILogger<MementoReminderService> logger)
+	
+	public MementoReminderService(
+		SlackMessageService messageService,
+		IMementoClient mementoClient, 
+		IDateProvider dateProvider,
+		ITranslatedResourceService translatedResourceService,
+		IOptions<MementoOptions> options,
+		ILogger<MementoReminderService> logger
+		)
 	{
 		_messageService = messageService;
 		_mementoClient = mementoClient;
 		_dateProvider = dateProvider;
+		_translatedResourceService = translatedResourceService;
 		_options = options;
 		_logger = logger;
 	}
@@ -38,7 +41,11 @@ public class MementoReminderService
 	public async Task SendGeneralReminder(bool tomorrowIsLastDay)
 	{
 		_logger.LogInformation("Function Run with Manual Trigger");
-		await _messageService.SendMessageToBotChannel(tomorrowIsLastDay ? MonthEndReminderText : GeneralReminderText);
+
+		TranslatedResourceCompoundKey key = new(tomorrowIsLastDay ? TranslatedResource.GeneralReminderMonthEndTemplate : TranslatedResource.GeneralReminderTemplate, Language.English);
+		string message = _translatedResourceService.GetTranslatedString(key);
+		
+		await _messageService.SendMessageToBotChannel(message);
 	}
 
 	public async Task SendIndividualReminders(bool tomorrowIsLastDay)
@@ -69,7 +76,10 @@ public class MementoReminderService
 			
 			_logger.LogDebug("Timesheet for {UserEmail} is {Complete}", user.Email, "Incomplete");
 
-			string template = tomorrowIsLastDay ? MonthEndIndividualReminderTemplate : IndividualReminderTemplate;
+			Language language = user.GetLanguage();
+			TranslatedResourceCompoundKey key = new(tomorrowIsLastDay ? TranslatedResource.IndividualReminderMonthEndTemplate : TranslatedResource.IndividualReminderTemplate, language);
+			
+			string template = _translatedResourceService.GetTranslatedString(key);
 			string message = string.Format(template, user.Name.Split(' ')[0]);
 			await _messageService.SendDirectMessageToUser(user.Email, message);
 		}
