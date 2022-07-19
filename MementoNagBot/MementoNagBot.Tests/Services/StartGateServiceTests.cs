@@ -3,6 +3,7 @@ using MementoNagBot.Models.Misc;
 using MementoNagBot.Providers.DateTimes;
 using MementoNagBot.Services.Gating;
 using MementoNagBot.Tests.Stubs;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace MementoNagBot.Tests.Services;
 
@@ -27,7 +28,7 @@ public class StartGateServiceTests
 				public void ThenItCanRunAsIsFriday(int year, int month, int day)
 				{
 					IDateProvider dateProvider = new DateProviderStub(new(year, month, day));
-					StartGateService service = new(dateProvider);
+					StartGateService service = new(dateProvider, NullLogger<StartGateService>.Instance);
 
 					service.CanRun().ShouldBe(CanRunResult.CanRunFriday);
 				}
@@ -42,7 +43,7 @@ public class StartGateServiceTests
 				public void ThenItCantRunAsWeRemindedPeopleYesterday(int year, int month, int day)
 				{
 					IDateProvider dateProvider = new DateProviderStub(new(year, month, day));
-					StartGateService service = new(dateProvider);
+					StartGateService service = new(dateProvider, NullLogger<StartGateService>.Instance);
 
 					service.CanRun().ShouldBe(CanRunResult.CantRun);
 				}
@@ -60,7 +61,7 @@ public class StartGateServiceTests
 				public void ThenItCanRunAsTomorrowLastDay(int year, int month, int day)
 				{
 					IDateProvider dateProvider = new DateProviderStub(new(year, month, day));
-					StartGateService service = new(dateProvider);
+					StartGateService service = new(dateProvider, NullLogger<StartGateService>.Instance);
 
 					service.CanRun().ShouldBe(CanRunResult.CanRunTomorrowLastDay);
 				}
@@ -73,7 +74,7 @@ public class StartGateServiceTests
 				public void ThenItCantRunAsNotTheRightDay(int year, int month, int day)
 				{
 					IDateProvider dateProvider = new DateProviderStub(new(year, month, day));
-					StartGateService service = new(dateProvider);
+					StartGateService service = new(dateProvider, NullLogger<StartGateService>.Instance);
 
 					service.CanRun().ShouldBe(CanRunResult.CantRun);
 				}

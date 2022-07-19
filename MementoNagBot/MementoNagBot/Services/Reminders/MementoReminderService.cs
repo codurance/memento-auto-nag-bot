@@ -6,6 +6,7 @@ using MementoNagBot.Models.Misc;
 using MementoNagBot.Models.Options;
 using MementoNagBot.Providers.DateTimes;
 using MementoNagBot.Services.Messaging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace MementoNagBot.Services.Reminders;
@@ -16,6 +17,7 @@ public class MementoReminderService
 	private readonly IMementoClient _mementoClient;
 	private readonly IDateProvider _dateProvider;
 	private readonly IOptions<MementoOptions> _options;
+	private readonly ILogger<MementoReminderService> _logger;
 
 
 	//TODO - Making these public for now, as when I add the translation service, they'll be injected. Just makes this iteration easier.
@@ -24,18 +26,25 @@ public class MementoReminderService
 	public const string IndividualReminderTemplate = "Hi {0}, it looks like you've forgotten to fill out your Memento. We know you're busy but we really need it to be kept up to date for billing purposes. So please could you ensure it's updated as soon as possible! If you're having difficulties doing so, please reach out to your manager!";
 	public const string MonthEndIndividualReminderTemplate = "Hi {0}, it looks like you've forgotten to fill out your Memento. We know you're busy but we really need it to be kept up to date for billing purposes. So please could you ensure it's updated as soon as possible! Please also remember to fill out tomorrow as it's month end. If you're having difficulties doing so, please reach out to your manager!";
 
-	public MementoReminderService(SlackMessageService messageService, IMementoClient mementoClient, IDateProvider dateProvider, IOptions<MementoOptions> options)
+	public MementoReminderService(SlackMessageService messageService, IMementoClient mementoClient, IDateProvider dateProvider, IOptions<MementoOptions> options, ILogger<MementoReminderService> logger)
 	{
 		_messageService = messageService;
 		_mementoClient = mementoClient;
 		_dateProvider = dateProvider;
 		_options = options;
+		_logger = logger;
 	}
 
-	public async Task SendGeneralReminder(bool tomorrowIsLastDay) => await _messageService.SendMessageToBotChannel(tomorrowIsLastDay ? MonthEndReminderText : GeneralReminderText);
-	
+	public async Task SendGeneralReminder(bool tomorrowIsLastDay)
+	{
+		_logger.LogInformation("Function Run with Manual Trigger");
+		await _messageService.SendMessageToBotChannel(tomorrowIsLastDay ? MonthEndReminderText : GeneralReminderText);
+	}
+
 	public async Task SendIndividualReminders(bool tomorrowIsLastDay)
 	{
+		_logger.LogInformation("Sending individual reminders because: {Reason}", tomorrowIsLastDay ? "tomorrow is last working day" : "it's Friday");
+		
 		InclusiveDateRange dateRange = GetRelevantDates(tomorrowIsLastDay);
 		
 		// It would be great if we could request time entries for all users, but this endpoint doesn't exist on memento.
@@ -52,8 +61,14 @@ public class MementoReminderService
 		{
 			MementoTimeSheet timeSheet = await _mementoClient.GetTimeSheetForUser(user.Email, dateRange);
 
-			if (timeSheet.IsComplete()) continue;
+			if (timeSheet.IsComplete())
+			{
+				_logger.LogDebug("Timesheet for {UserEmail} is {Complete}", user.Email, "Complete");
+				continue;
+			}
 			
+			_logger.LogDebug("Timesheet for {UserEmail} is {Complete}", user.Email, "Incomplete");
+
 			string template = tomorrowIsLastDay ? MonthEndIndividualReminderTemplate : IndividualReminderTemplate;
 			string message = string.Format(template, user.Name.Split(' ')[0]);
 			await _messageService.SendDirectMessageToUser(user.Email, message);
@@ -75,6 +90,8 @@ public class MementoReminderService
 			DayOfWeek.Sunday => throw new ArgumentOutOfRangeException(),
 			_ => throw new ArgumentOutOfRangeException()
 		};
+		
+		_logger.LogDebug("Relevant dates for timesheet are {StartDate} to {EndDate}", startDate, endDate);
 
 		return new(startDate, endDate);
 	}

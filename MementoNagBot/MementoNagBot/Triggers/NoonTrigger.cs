@@ -10,16 +10,20 @@ public class NoonTrigger
 {
 	private readonly StartGateService _startGate;
 	private readonly MementoReminderService _reminderService;
+	private readonly ILogger<NoonTrigger> _logger;
 
-	public NoonTrigger(StartGateService startGate, MementoReminderService reminderService)
+	public NoonTrigger(StartGateService startGate, MementoReminderService reminderService, ILogger<NoonTrigger> logger)
 	{
 		_startGate = startGate;
 		_reminderService = reminderService;
+		_logger = logger;
 	}
 	
 	[FunctionName("NoonTrigger")]
 	public async Task RunAsync([TimerTrigger("0 0 12 * * MON-FRI")] TimerInfo myTimer, ILogger log)
 	{
+		_logger.LogInformation("Function Run with Noon Trigger");
+		
 		CanRunResult canRunResult = _startGate.CanRun();
 		
 		switch (canRunResult)

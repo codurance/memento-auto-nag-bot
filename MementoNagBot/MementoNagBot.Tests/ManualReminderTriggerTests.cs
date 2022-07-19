@@ -5,6 +5,7 @@ using MementoNagBot.Triggers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using SlackAPI;
 using SlackAPI.RPCMessages;
@@ -25,8 +26,8 @@ public class ManualReminderTriggerTests
 	        client.PostMessageAsync(Arg.Any<string>(), Arg.Any<string>())
 		        .Returns(Task.FromResult(new PostMessageResponse { ok = true }));
 	        IOptions<BotOptions> options = Options.Create(new BotOptions{BotChannel = channel});
-	        SlackMessageService service = new(client, options);
-	        ManualReminderTrigger trigger = new(service);
+	        SlackMessageService service = new(client, options, NullLogger<SlackMessageService>.Instance);
+	        ManualReminderTrigger trigger = new(service, NullLogger<ManualReminderTrigger>.Instance);
 	        HttpRequest req = new DefaultHttpRequest(new DefaultHttpContext());
 	        req.QueryString = new("?path=channel");
 	        IActionResult res = await trigger.RunAsync(req, null!);
@@ -52,8 +53,8 @@ public class ManualReminderTriggerTests
 	        client.PostMessageAsync(Arg.Any<string>(), Arg.Any<string>()).Returns(Task.FromResult(new PostMessageResponse { ok = true }));
 	        client.GetUserByEmailAsync(jamesEmail).Returns(Task.FromResult(response));
 	        IOptions<BotOptions> options = Options.Create(new BotOptions{BotChannel = channel});
-	        SlackMessageService service = new(client, options);
-	        ManualReminderTrigger trigger = new(service);
+	        SlackMessageService service = new(client, options, NullLogger<SlackMessageService>.Instance);
+	        ManualReminderTrigger trigger = new(service, NullLogger<ManualReminderTrigger>.Instance);
 	        HttpRequest req = new DefaultHttpRequest(new DefaultHttpContext());
 	        req.QueryString = new("?path=direct");
 	        IActionResult res = await trigger.RunAsync(req, null!);

@@ -1,19 +1,24 @@
 using MementoNagBot.Models.Misc;
 using MementoNagBot.Providers.DateTimes;
+using Microsoft.Extensions.Logging;
 
 namespace MementoNagBot.Services.Gating;
 
 public class StartGateService
 {
 	private readonly IDateProvider _dateProvider;
+	private readonly ILogger<StartGateService> _logger;
 
-	public StartGateService(IDateProvider dateProvider)
+	public StartGateService(IDateProvider dateProvider, ILogger<StartGateService> logger)
 	{
 		_dateProvider = dateProvider;
+		_logger = logger;
 	}
 
 	public CanRunResult CanRun()
 	{
+		_logger.LogDebug("Passing through start gate...");
+		
 		DateOnly today = _dateProvider.Today();
 
 		if (today.DayOfWeek is DayOfWeek.Friday)
