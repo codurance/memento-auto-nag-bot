@@ -30,11 +30,12 @@ public class MementoReminderServiceTests
 			{
 				SlackMessageServiceStub messageStub = new(null!, null!);
 				DateProviderStub dateStub = new(new(2022, 07, 15));
-				MementoReminderService service = new(messageStub, null!, dateStub, Options, NullLogger<MementoReminderService>.Instance);
+				TranslationServiceStub translationStub = new();
+				MementoReminderService service = new(messageStub, null!, dateStub, translationStub, Options, NullLogger<MementoReminderService>.Instance);
 
 				await service.SendGeneralReminder(true);
 
-				messageStub.LastBotChannelMessage.ShouldBe(MementoReminderService.MonthEndReminderText);
+				messageStub.LastBotChannelMessage.ShouldBe($"{TranslationServiceStub.MonthEndReminderText}English");
 			}
 		}
 
@@ -50,10 +51,11 @@ public class MementoReminderServiceTests
 				List<string> reminderMessages = testData
 					.Where(td => !td.Key.Email.Contains("WhiteList"))
 					.Where(td => !td.Value.IsComplete())
-					.Select(td => string.Format(MementoReminderService.MonthEndIndividualReminderTemplate, td.Key.Name.Split(' ')[0]))
+					.Select(td => string.Format($"{TranslationServiceStub.IndividualMonthEndReminderText}English", td.Key.Name.Split(' ')[0]))
 					.ToList();
 
 				SlackMessageServiceStub messageStub = new(null!, null!);
+				TranslationServiceStub translationStub = new();
 				
 				IMementoClient client = Substitute.For<IMementoClient>();
 				client.GetActiveInternalUsers().Returns(testData.Keys.ToList());
@@ -62,7 +64,7 @@ public class MementoReminderServiceTests
 					client.GetTimeSheetForUser(userTimeEntryPair.Key.Email, Arg.Any<InclusiveDateRange>())
 						.Returns(userTimeEntryPair.Value);
 				}
-				MementoReminderService service = new(messageStub, client, DateStub, Options, NullLogger<MementoReminderService>.Instance);
+				MementoReminderService service = new(messageStub, client, DateStub, translationStub, Options, NullLogger<MementoReminderService>.Instance);
 				
 				await service.SendIndividualReminders(true);
 				
@@ -84,6 +86,8 @@ public class MementoReminderServiceTests
 					.ToList();
 				
 				SlackMessageServiceStub messageStub = new(null!, null!);
+				TranslationServiceStub translationStub = new();
+				
 				IMementoClient client = Substitute.For<IMementoClient>();
 				client.GetActiveInternalUsers().Returns(testData.Keys.ToList());
 				foreach (KeyValuePair<MementoUser, MementoTimeSheet> userTimeEntryPair in testData)
@@ -91,7 +95,8 @@ public class MementoReminderServiceTests
 					client.GetTimeSheetForUser(userTimeEntryPair.Key.Email, Arg.Any<InclusiveDateRange>())
 						.Returns(userTimeEntryPair.Value);
 				}
-				MementoReminderService service = new(messageStub, client, DateStub, Options, NullLogger<MementoReminderService>.Instance);
+				
+				MementoReminderService service = new(messageStub, client, DateStub, translationStub, Options, NullLogger<MementoReminderService>.Instance);
 				
 				await service.SendIndividualReminders(true);
 
@@ -109,6 +114,8 @@ public class MementoReminderServiceTests
 				List<string> whitelistedUsers = testData.Keys.Select(u => u.Email).Where(u => u.Contains("WhiteList")).ToList();
 				
 				SlackMessageServiceStub messageStub = new(null!, null!);
+				TranslationServiceStub translationStub = new();
+				
 				IMementoClient client = Substitute.For<IMementoClient>();
 				client.GetActiveInternalUsers().Returns(testData.Keys.ToList());
 				foreach (KeyValuePair<MementoUser, MementoTimeSheet> userTimeEntryPair in testData)
@@ -116,7 +123,8 @@ public class MementoReminderServiceTests
 					client.GetTimeSheetForUser(userTimeEntryPair.Key.Email, Arg.Any<InclusiveDateRange>())
 						.Returns(userTimeEntryPair.Value);
 				}
-				MementoReminderService service = new(messageStub, client, DateStub, Options, NullLogger<MementoReminderService>.Instance);
+				
+				MementoReminderService service = new(messageStub, client, DateStub, translationStub, Options, NullLogger<MementoReminderService>.Instance);
 				
 				await service.SendIndividualReminders(true);
 				
@@ -137,11 +145,12 @@ public class MementoReminderServiceTests
 			public async Task ThenTheGeneralReminderMessageIsSent()
 			{
 				SlackMessageServiceStub messageStub = new(null!, null!);
-				MementoReminderService service = new(messageStub, null!, DateStub, Options, NullLogger<MementoReminderService>.Instance);
+				TranslationServiceStub translationStub = new();
+				MementoReminderService service = new(messageStub, null!, DateStub, translationStub, Options, NullLogger<MementoReminderService>.Instance);
 
 				await service.SendGeneralReminder(false);
 
-				messageStub.LastBotChannelMessage.ShouldBe(MementoReminderService.GeneralReminderText);
+				messageStub.LastBotChannelMessage.ShouldBe($"{TranslationServiceStub.FridayReminderText}English");
 			}
 			
 		}
@@ -158,10 +167,11 @@ public class MementoReminderServiceTests
 				List<string> reminderMessages = testData
 					.Where(td => !td.Key.Email.Contains("WhiteList"))
 					.Where(td => !td.Value.IsComplete())
-					.Select(td => string.Format(MementoReminderService.IndividualReminderTemplate, td.Key.Name.Split(' ')[0]))
+					.Select(td => string.Format($"{TranslationServiceStub.IndividualFridayReminderText}English", td.Key.Name.Split(' ')[0]))
 					.ToList();
 
 				SlackMessageServiceStub messageStub = new(null!, null!);
+				TranslationServiceStub translationStub = new();
 				
 				IMementoClient client = Substitute.For<IMementoClient>();
 				client.GetActiveInternalUsers().Returns(testData.Keys.ToList());
@@ -170,7 +180,8 @@ public class MementoReminderServiceTests
 					client.GetTimeSheetForUser(userTimeEntryPair.Key.Email, Arg.Any<InclusiveDateRange>())
 						.Returns(userTimeEntryPair.Value);
 				}
-				MementoReminderService service = new(messageStub, client, DateStub, Options, NullLogger<MementoReminderService>.Instance);
+				
+				MementoReminderService service = new(messageStub, client, DateStub, translationStub, Options, NullLogger<MementoReminderService>.Instance);
 				
 				await service.SendIndividualReminders(false);
 				
@@ -192,6 +203,8 @@ public class MementoReminderServiceTests
 					.ToList();
 				
 				SlackMessageServiceStub messageStub = new(null!, null!);
+				TranslationServiceStub translationStub = new();
+				
 				IMementoClient client = Substitute.For<IMementoClient>();
 				client.GetActiveInternalUsers().Returns(testData.Keys.ToList());
 				foreach (KeyValuePair<MementoUser, MementoTimeSheet> userTimeEntryPair in testData)
@@ -199,7 +212,8 @@ public class MementoReminderServiceTests
 					client.GetTimeSheetForUser(userTimeEntryPair.Key.Email, Arg.Any<InclusiveDateRange>())
 						.Returns(userTimeEntryPair.Value);
 				}
-				MementoReminderService service = new(messageStub, client, DateStub, Options, NullLogger<MementoReminderService>.Instance);
+				
+				MementoReminderService service = new(messageStub, client, DateStub, translationStub, Options, NullLogger<MementoReminderService>.Instance);
 				
 				await service.SendIndividualReminders(false);
 
@@ -217,6 +231,8 @@ public class MementoReminderServiceTests
 				List<string> whitelistedUsers = testData.Keys.Select(u => u.Email).Where(u => u.Contains("WhiteList")).ToList();
 				
 				SlackMessageServiceStub messageStub = new(null!, null!);
+				TranslationServiceStub translationStub = new();
+				
 				IMementoClient client = Substitute.For<IMementoClient>();
 				client.GetActiveInternalUsers().Returns(testData.Keys.ToList());
 				foreach (KeyValuePair<MementoUser, MementoTimeSheet> userTimeEntryPair in testData)
@@ -224,7 +240,8 @@ public class MementoReminderServiceTests
 					client.GetTimeSheetForUser(userTimeEntryPair.Key.Email, Arg.Any<InclusiveDateRange>())
 						.Returns(userTimeEntryPair.Value);
 				}
-				MementoReminderService service = new(messageStub, client, DateStub, Options, NullLogger<MementoReminderService>.Instance);
+				
+				MementoReminderService service = new(messageStub, client, DateStub, translationStub, Options, NullLogger<MementoReminderService>.Instance);
 				
 				await service.SendIndividualReminders(false);
 				
