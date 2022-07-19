@@ -6,6 +6,7 @@ using MementoNagBot.Models.Misc;
 using MementoNagBot.Models.Options;
 using MementoNagBot.Services.Reminders;
 using MementoNagBot.Tests.Stubs;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace MementoNagBot.Tests.Services;
@@ -29,7 +30,7 @@ public class MementoReminderServiceTests
 			{
 				SlackMessageServiceStub messageStub = new(null!, null!);
 				DateProviderStub dateStub = new(new(2022, 07, 15));
-				MementoReminderService service = new(messageStub, null!, dateStub, Options);
+				MementoReminderService service = new(messageStub, null!, dateStub, Options, NullLogger<MementoReminderService>.Instance);
 
 				await service.SendGeneralReminder(true);
 
@@ -61,7 +62,7 @@ public class MementoReminderServiceTests
 					client.GetTimeSheetForUser(userTimeEntryPair.Key.Email, Arg.Any<InclusiveDateRange>())
 						.Returns(userTimeEntryPair.Value);
 				}
-				MementoReminderService service = new(messageStub, client, DateStub, Options);
+				MementoReminderService service = new(messageStub, client, DateStub, Options, NullLogger<MementoReminderService>.Instance);
 				
 				await service.SendIndividualReminders(true);
 				
@@ -90,7 +91,7 @@ public class MementoReminderServiceTests
 					client.GetTimeSheetForUser(userTimeEntryPair.Key.Email, Arg.Any<InclusiveDateRange>())
 						.Returns(userTimeEntryPair.Value);
 				}
-				MementoReminderService service = new(messageStub, client, DateStub, Options);
+				MementoReminderService service = new(messageStub, client, DateStub, Options, NullLogger<MementoReminderService>.Instance);
 				
 				await service.SendIndividualReminders(true);
 
@@ -115,7 +116,7 @@ public class MementoReminderServiceTests
 					client.GetTimeSheetForUser(userTimeEntryPair.Key.Email, Arg.Any<InclusiveDateRange>())
 						.Returns(userTimeEntryPair.Value);
 				}
-				MementoReminderService service = new(messageStub, client, DateStub, Options);
+				MementoReminderService service = new(messageStub, client, DateStub, Options, NullLogger<MementoReminderService>.Instance);
 				
 				await service.SendIndividualReminders(true);
 				
@@ -136,7 +137,7 @@ public class MementoReminderServiceTests
 			public async Task ThenTheGeneralReminderMessageIsSent()
 			{
 				SlackMessageServiceStub messageStub = new(null!, null!);
-				MementoReminderService service = new(messageStub, null!, DateStub, Options);
+				MementoReminderService service = new(messageStub, null!, DateStub, Options, NullLogger<MementoReminderService>.Instance);
 
 				await service.SendGeneralReminder(false);
 
@@ -169,7 +170,7 @@ public class MementoReminderServiceTests
 					client.GetTimeSheetForUser(userTimeEntryPair.Key.Email, Arg.Any<InclusiveDateRange>())
 						.Returns(userTimeEntryPair.Value);
 				}
-				MementoReminderService service = new(messageStub, client, DateStub, Options);
+				MementoReminderService service = new(messageStub, client, DateStub, Options, NullLogger<MementoReminderService>.Instance);
 				
 				await service.SendIndividualReminders(false);
 				
@@ -198,7 +199,7 @@ public class MementoReminderServiceTests
 					client.GetTimeSheetForUser(userTimeEntryPair.Key.Email, Arg.Any<InclusiveDateRange>())
 						.Returns(userTimeEntryPair.Value);
 				}
-				MementoReminderService service = new(messageStub, client, DateStub, Options);
+				MementoReminderService service = new(messageStub, client, DateStub, Options, NullLogger<MementoReminderService>.Instance);
 				
 				await service.SendIndividualReminders(false);
 
@@ -223,7 +224,7 @@ public class MementoReminderServiceTests
 					client.GetTimeSheetForUser(userTimeEntryPair.Key.Email, Arg.Any<InclusiveDateRange>())
 						.Returns(userTimeEntryPair.Value);
 				}
-				MementoReminderService service = new(messageStub, client, DateStub, Options);
+				MementoReminderService service = new(messageStub, client, DateStub, Options, NullLogger<MementoReminderService>.Instance);
 				
 				await service.SendIndividualReminders(false);
 				

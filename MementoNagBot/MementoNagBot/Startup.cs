@@ -8,6 +8,7 @@ using MementoNagBot.Services.Reminders;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 
 [assembly: FunctionsStartup(typeof(MementoNagBot.Startup))]
 namespace MementoNagBot;
@@ -24,6 +25,12 @@ public class Startup: FunctionsStartup
 	public override void Configure(IFunctionsHostBuilder builder)
 	{
 		IConfiguration config = builder.GetContext().Configuration;
+		
+		builder.Services.AddLogging(l =>
+		{
+			LoggerConfiguration lc = new();
+			l.AddSerilog(lc.CreateLogger());
+		});
 
 		builder.Services.Configure<BotOptions>(config.GetSection("Values:BotOptions"));
 		builder.Services.Configure<SlackOptions>(config.GetSection("Values:SlackOptions"));
