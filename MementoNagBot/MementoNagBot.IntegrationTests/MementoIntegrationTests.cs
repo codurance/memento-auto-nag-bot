@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using MementoNagBot.Clients.Memento;
 using MementoNagBot.Models.Memento;
 using MementoNagBot.Models.Misc;
+using Microsoft.Extensions.Logging.Abstractions;
 using Shouldly;
 
 namespace MementoNagBot.IntegrationTests;
@@ -23,7 +24,7 @@ public class MementoIntegrationTests
 			HttpClient innerClient = new();
 			innerClient.BaseAddress = new(MementoUrl);
 			innerClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", MementoAuthToken);
-			return new MementoClient(innerClient);
+			return new MementoClient(innerClient, NullLogger<MementoClient>.Instance);
 		}
 		
 		public class WhenIAttemptToGetTheUserList

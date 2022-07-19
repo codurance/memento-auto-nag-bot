@@ -1,6 +1,7 @@
 using MementoNagBot.Clients.Slack;
 using MementoNagBot.Models.Options;
 using MementoNagBot.Services.Messaging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace MementoNagBot.Tests.Stubs;
@@ -11,7 +12,7 @@ public class SlackMessageServiceStub : SlackMessageService
 
 	public readonly List<(string Email, string Message)> DirectMessagesSent = new(); 
 
-	public SlackMessageServiceStub(ISlackClient client, IOptions<BotOptions> botOptions) : base(client, botOptions)
+	public SlackMessageServiceStub(ISlackClient client, IOptions<BotOptions> botOptions) : base(client, botOptions, NullLogger<SlackMessageService>.Instance)
 	{
 	}
 
