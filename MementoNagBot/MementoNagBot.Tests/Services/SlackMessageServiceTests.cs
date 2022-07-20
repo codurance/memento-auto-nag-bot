@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using MementoNagBot.Clients.Slack;
+using MementoNagBot.Extensions.DependencyInjection;
 using MementoNagBot.Models.Options;
 using MementoNagBot.Services.Messaging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -20,7 +21,7 @@ public class SlackMessageServiceTests
 			public async Task ThenItDoesNotThrow()
 			{
 				SlackOptions slackOptions = new() { SlackApiToken = "123123" };
-				ISlackClient slackClient = new SlackClientWrapper(Options.Create(slackOptions), NullLogger<SlackClientWrapper>.Instance);
+				ISlackClient slackClient = new SlackClientWrapper(PollySetupExtensions.GetPolicyRegistry(), Options.Create(slackOptions), NullLogger<SlackClientWrapper>.Instance);
 
 				BotOptions botOptions = new() { BotChannel = "#botspam" };
 				SlackMessageService messageService = new(slackClient, Options.Create(botOptions), NullLogger<SlackMessageService>.Instance);
@@ -35,7 +36,7 @@ public class SlackMessageServiceTests
 			public async Task ThenItDoesNotThrow()
 			{
 				SlackOptions slackOptions = new() { SlackApiToken = "123123" };
-				ISlackClient slackClient = new SlackClientWrapper(Options.Create(slackOptions), NullLogger<SlackClientWrapper>.Instance);
+				ISlackClient slackClient = new SlackClientWrapper(PollySetupExtensions.GetPolicyRegistry(), Options.Create(slackOptions), NullLogger<SlackClientWrapper>.Instance);
 
 				BotOptions botOptions = new() { BotChannel = "#botspam" };
 				SlackMessageService messageService = new(slackClient, Options.Create(botOptions), NullLogger<SlackMessageService>.Instance);

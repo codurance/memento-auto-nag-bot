@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using MementoNagBot.Clients.Memento;
+using MementoNagBot.Extensions.DependencyInjection;
 using MementoNagBot.Models.Memento;
 using MementoNagBot.Models.Misc;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -24,7 +25,7 @@ public class MementoIntegrationTests
 			HttpClient innerClient = new();
 			innerClient.BaseAddress = new(MementoUrl);
 			innerClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", MementoAuthToken);
-			return new MementoClient(innerClient, NullLogger<MementoClient>.Instance);
+			return new MementoClient(innerClient, PollySetupExtensions.GetPolicyRegistry(), NullLogger<MementoClient>.Instance);
 		}
 		
 		public class WhenIAttemptToGetTheUserList
