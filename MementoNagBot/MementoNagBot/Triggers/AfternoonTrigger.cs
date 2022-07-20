@@ -8,6 +8,8 @@ namespace MementoNagBot.Triggers;
 
 public class AfternoonTrigger
 {
+	public const string ScheduleExpression = "0 16 * * MON-FRI";
+	
 	private readonly StartGateService _startGate;
 	private readonly MementoReminderService _reminderService;
 	private readonly ILogger<AfternoonTrigger> _logger;
@@ -20,7 +22,7 @@ public class AfternoonTrigger
 	}
 
 	[FunctionName("AfternoonTrigger")]
-	public async Task RunAsync([TimerTrigger("0 0 16 * * MON-FRI")] TimerInfo myTimer, ILogger log)
+	public async Task RunAsync([TimerTrigger(ScheduleExpression)] TimerInfo myTimer, ILogger log)
 	{
 		_logger.LogInformation("Function Run with Afternoon Timed Trigger");
 		

@@ -38,7 +38,7 @@ public class MementoReminderService
 		_logger = logger;
 	}
 
-	public async Task SendGeneralReminder(bool tomorrowIsLastDay)
+	public virtual async Task SendGeneralReminder(bool tomorrowIsLastDay)
 	{
 		_logger.LogInformation("Function Run with Manual Trigger");
 
@@ -48,7 +48,7 @@ public class MementoReminderService
 		await _messageService.SendMessageToBotChannel(message);
 	}
 
-	public async Task SendIndividualReminders(bool tomorrowIsLastDay)
+	public virtual async Task SendIndividualReminders(bool tomorrowIsLastDay)
 	{
 		_logger.LogInformation("Sending individual reminders because: {Reason}", tomorrowIsLastDay ? "tomorrow is last working day" : "it's Friday");
 		

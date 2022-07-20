@@ -43,4 +43,4 @@ public record MementoUser
 			
 			_ => Language.English
 		};
-};
+}
