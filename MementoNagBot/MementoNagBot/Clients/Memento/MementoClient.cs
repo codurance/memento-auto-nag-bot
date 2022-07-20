@@ -17,7 +17,13 @@ public class MementoClient: IMementoClient
 	private readonly HttpClient _client;
 	private readonly ILogger<MementoClient> _logger;
 	private readonly AsyncRetryPolicy<HttpResponseMessage> _retryPolicy;
-	private const int NumRetries = 5;
+	private readonly TimeSpan[] _retryDurations =
+	{
+		TimeSpan.FromMilliseconds(500),
+		TimeSpan.FromSeconds(1),
+		TimeSpan.FromSeconds(2),
+		TimeSpan.FromSeconds(5)
+	};
 
 	public MementoClient(HttpClient client, ILogger<MementoClient> logger)
 	{
@@ -26,9 +32,9 @@ public class MementoClient: IMementoClient
 
 		_retryPolicy = Policy.Handle<HttpRequestException>()
 			.OrResult<HttpResponseMessage>(r => !r.IsSuccessStatusCode)
-			.RetryAsync(NumRetries, (_, i) =>
+			.WaitAndRetryAsync(_retryDurations, (_, _, i, _) =>
 			{
-				if (i < NumRetries)
+				if (i < _retryDurations.Length)
 				{
 					_logger.LogWarning("Memento connection failed\nRetry count: {RetryCount}", i);
 				}

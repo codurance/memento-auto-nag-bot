@@ -15,7 +15,13 @@ public class SlackClientWrapper: ISlackClient
 	private readonly AsyncRetryPolicy<UserEmailLookupResponse> _lookupRetryPolicy;
 	private readonly AsyncRetryPolicy<PostMessageResponse> _messageRetryPolicy;
 
-	private const int NumRetries = 5;
+	private readonly TimeSpan[] _retryDurations =
+	{
+		TimeSpan.FromMilliseconds(500),
+		TimeSpan.FromSeconds(1),
+		TimeSpan.FromSeconds(2),
+		TimeSpan.FromSeconds(5)
+	};
 	
 	
 	public SlackClientWrapper(IOptions<SlackOptions> slackOptions, ILogger<SlackClientWrapper> logger)
@@ -24,9 +30,9 @@ public class SlackClientWrapper: ISlackClient
 		_client = new(slackOptions.Value.SlackApiToken);
 		
 		_lookupRetryPolicy = Policy.HandleResult<UserEmailLookupResponse>(r => !r.ok)
-			.RetryAsync(NumRetries, (_, i) =>
+			.WaitAndRetryAsync(_retryDurations, (_, _, i, _) =>
 			{
-				if (i < NumRetries)
+				if (i < _retryDurations.Length)
 				{
 					_logger.LogWarning("Failed to lookup Slack User ID from Email, will retry!\nRetry count: {RetryCount}", i);
 				}
@@ -37,9 +43,9 @@ public class SlackClientWrapper: ISlackClient
 			});
 		
 		_messageRetryPolicy = Policy.HandleResult<PostMessageResponse>(r => !r.ok)
-			.RetryAsync(NumRetries, (_, i) =>
+			.WaitAndRetryAsync(_retryDurations, (_, _, i, _) =>
 			{
-				if (i < NumRetries)
+				if (i < _retryDurations.Length)
 				{
 					_logger.LogWarning("Failed to send message to slack, will retry!\nRetry count: {RetryCount}", i);
 				}
