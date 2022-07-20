@@ -1,11 +1,14 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using MementoNagBot.Models.Memento;
 using MementoNagBot.Models.Misc;
 using Microsoft.Extensions.Logging;
+using Polly;
+using Polly.Retry;
 
 namespace MementoNagBot.Clients.Memento;
 
@@ -13,17 +16,44 @@ public class MementoClient: IMementoClient
 {
 	private readonly HttpClient _client;
 	private readonly ILogger<MementoClient> _logger;
+	private readonly AsyncRetryPolicy<HttpResponseMessage> _retryPolicy;
+	private readonly TimeSpan[] _retryDurations =
+	{
+		TimeSpan.FromMilliseconds(500),
+		TimeSpan.FromSeconds(1),
+		TimeSpan.FromSeconds(2),
+		TimeSpan.FromSeconds(5)
+	};
 
 	public MementoClient(HttpClient client, ILogger<MementoClient> logger)
 	{
 		_client = client;
 		_logger = logger;
+
+		_retryPolicy = Policy.Handle<HttpRequestException>()
+			.OrResult<HttpResponseMessage>(r => !r.IsSuccessStatusCode)
+			.WaitAndRetryAsync(_retryDurations, (_, _, i, _) =>
+			{
+				if (i < _retryDurations.Length)
+				{
+					_logger.LogWarning("Memento connection failed\nRetry count: {RetryCount}", i);
+				}
+				else
+				{
+					_logger.LogError("Can't reach Memento... Giving up!");
+				}
+			});
+
 	}
 
 	public async Task<List<MementoUser>> GetActiveInternalUsers()
 	{
 		_logger.LogDebug("Fetching users from Memento...");
-		List<MementoUser>? users = await _client.GetFromJsonAsync<List<MementoUser>>("users");
+
+		HttpResponseMessage? res = await _retryPolicy.ExecuteAsync(() => _client.GetAsync("users"));
+
+		List<MementoUser>? users = await res.Content.ReadFromJsonAsync<List<MementoUser>>();
+		
 		
 		if (users is null)
 		{
