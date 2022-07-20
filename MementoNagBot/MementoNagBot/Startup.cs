@@ -1,5 +1,6 @@
 using System.IO;
 using MementoNagBot.Clients.Slack;
+using MementoNagBot.Extensions.DependencyInjection;
 using MementoNagBot.Models.Options;
 using MementoNagBot.Providers.DateTimes;
 using MementoNagBot.Services.Gating;
@@ -43,5 +44,7 @@ public class Startup: FunctionsStartup
 		
 		builder.Services.AddTransient<ISlackClient, SlackClientWrapper>();
 		builder.Services.AddTransient<IDateProvider, SystemDateProvider>();
+
+		builder.Services.RegisterPollyPolicies();
 	}
 }

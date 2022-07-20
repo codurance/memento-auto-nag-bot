@@ -1,7 +1,9 @@
+using System.Collections.Generic;
 using MementoNagBot.Models.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Polly;
+using Polly.Registry;
 using Polly.Retry;
 using SlackAPI;
 using SlackAPI.RPCMessages;
@@ -15,50 +17,22 @@ public class SlackClientWrapper: ISlackClient
 	private readonly AsyncRetryPolicy<UserEmailLookupResponse> _lookupRetryPolicy;
 	private readonly AsyncRetryPolicy<PostMessageResponse> _messageRetryPolicy;
 
-	private readonly TimeSpan[] _retryDurations =
-	{
-		TimeSpan.FromMilliseconds(500),
-		TimeSpan.FromSeconds(1),
-		TimeSpan.FromSeconds(2),
-		TimeSpan.FromSeconds(5)
-	};
-	
-	
-	public SlackClientWrapper(IOptions<SlackOptions> slackOptions, ILogger<SlackClientWrapper> logger)
+
+	public SlackClientWrapper(IReadOnlyPolicyRegistry<string> policyRegistry, IOptions<SlackOptions> slackOptions, ILogger<SlackClientWrapper> logger)
 	{
 		_logger = logger;
 		_client = new(slackOptions.Value.SlackApiToken);
-		
-		_lookupRetryPolicy = Policy.HandleResult<UserEmailLookupResponse>(r => !r.ok)
-			.WaitAndRetryAsync(_retryDurations, (_, _, i, _) =>
-			{
-				if (i < _retryDurations.Length)
-				{
-					_logger.LogWarning("Failed to lookup Slack User ID from Email, will retry!\nRetry count: {RetryCount}", i);
-				}
-				else
-				{
-					_logger.LogError("Can't find Slack User ID from Email... Giving up!");
-				}
-			});
-		
-		_messageRetryPolicy = Policy.HandleResult<PostMessageResponse>(r => !r.ok)
-			.WaitAndRetryAsync(_retryDurations, (_, _, i, _) =>
-			{
-				if (i < _retryDurations.Length)
-				{
-					_logger.LogWarning("Failed to send message to slack, will retry!\nRetry count: {RetryCount}", i);
-				}
-				else
-				{
-					_logger.LogError("Can't send message to Slack... Giving up!");
-				}
-			});
+
+		_lookupRetryPolicy = policyRegistry.Get<AsyncRetryPolicy<UserEmailLookupResponse>>(nameof(ISlackClient.GetUserByEmailAsync));
+		_messageRetryPolicy = policyRegistry.Get<AsyncRetryPolicy<PostMessageResponse>>(nameof(ISlackClient.PostMessageAsync));
 	}
 
 
-	public Task<UserEmailLookupResponse> GetUserByEmailAsync(string email) 
-		=> _lookupRetryPolicy.ExecuteAsync(() => _client.GetUserByEmailAsync(email));
+	public Task<UserEmailLookupResponse> GetUserByEmailAsync(string email)
+	{
+
+		return _lookupRetryPolicy.ExecuteAsync(_ => _client.GetUserByEmailAsync(email), GetFreshContext());
+	}
 
 	public Task<PostMessageResponse> PostMessageAsync(
 		string channelId,
@@ -73,6 +47,14 @@ public class SlackClientWrapper: ISlackClient
 		string iconEmoji = null!,
 		bool asUser = false,
 		string threadTs = null!)
-		=> _messageRetryPolicy.ExecuteAsync(() => 
-			_client.PostMessageAsync(channelId, text, botName, parse, linkNames, blocks, attachments, unfurlLinks, iconUrl, iconEmoji, asUser, threadTs));
+		=> _messageRetryPolicy.ExecuteAsync(_ => 
+			_client.PostMessageAsync(channelId, text, botName, parse, linkNames, blocks, attachments, unfurlLinks, iconUrl, iconEmoji, asUser, threadTs), GetFreshContext());
+
+	private Context GetFreshContext()
+	{
+		return new(Guid.NewGuid().ToString(), new Dictionary<string, object>
+		{
+			{ "logger", _logger }
+		});
+	}
 }

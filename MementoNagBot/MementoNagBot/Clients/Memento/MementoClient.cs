@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using MementoNagBot.Models.Memento;
 using MementoNagBot.Models.Misc;
 using Microsoft.Extensions.Logging;
 using Polly;
+using Polly.Registry;
 using Polly.Retry;
 
 namespace MementoNagBot.Clients.Memento;
@@ -17,40 +17,21 @@ public class MementoClient: IMementoClient
 	private readonly HttpClient _client;
 	private readonly ILogger<MementoClient> _logger;
 	private readonly AsyncRetryPolicy<HttpResponseMessage> _retryPolicy;
-	private readonly TimeSpan[] _retryDurations =
-	{
-		TimeSpan.FromMilliseconds(500),
-		TimeSpan.FromSeconds(1),
-		TimeSpan.FromSeconds(2),
-		TimeSpan.FromSeconds(5)
-	};
 
-	public MementoClient(HttpClient client, ILogger<MementoClient> logger)
+
+	public MementoClient(HttpClient client, IReadOnlyPolicyRegistry<string> policyRegistry, ILogger<MementoClient> logger)
 	{
 		_client = client;
 		_logger = logger;
 
-		_retryPolicy = Policy.Handle<HttpRequestException>()
-			.OrResult<HttpResponseMessage>(r => !r.IsSuccessStatusCode)
-			.WaitAndRetryAsync(_retryDurations, (_, _, i, _) =>
-			{
-				if (i < _retryDurations.Length)
-				{
-					_logger.LogWarning("Memento connection failed\nRetry count: {RetryCount}", i);
-				}
-				else
-				{
-					_logger.LogError("Can't reach Memento... Giving up!");
-				}
-			});
-
+		_retryPolicy = policyRegistry.Get<AsyncRetryPolicy<HttpResponseMessage>>(nameof(IMementoClient));
 	}
 
 	public async Task<List<MementoUser>> GetActiveInternalUsers()
 	{
 		_logger.LogDebug("Fetching users from Memento...");
 
-		HttpResponseMessage? res = await _retryPolicy.ExecuteAsync(() => _client.GetAsync("users"));
+		HttpResponseMessage? res = await _retryPolicy.ExecuteAsync(_ => _client.GetAsync("users"), GetFreshContext());
 
 		List<MementoUser>? users = await res.Content.ReadFromJsonAsync<List<MementoUser>>();
 		
@@ -77,7 +58,9 @@ public class MementoClient: IMementoClient
 		query.Add("end", dateRange.EndDate.ToString("yyyy-MM-dd"));
 		string queryString = query.ToString() ?? string.Empty;
 
-		List<MementoTimeEntry>? entries = await _client.GetFromJsonAsync<List<MementoTimeEntry>>($"user/{userId}/timeentries?{queryString}");
+		HttpResponseMessage? res = await _retryPolicy.ExecuteAsync(_ => _client.GetAsync($"user/{userId}/timeentries?{queryString}"), GetFreshContext());
+		
+		List<MementoTimeEntry>? entries = await res.Content.ReadFromJsonAsync<List<MementoTimeEntry>>();
 
 		if (entries is null)
 		{
@@ -91,5 +74,13 @@ public class MementoClient: IMementoClient
 		MementoTimeSheet timeSheet = new(dateRange, entries);
 
 		return timeSheet;
+	}
+	
+	private Context GetFreshContext()
+	{
+		return new(Guid.NewGuid().ToString(), new Dictionary<string, object>
+		{
+			{ "logger", _logger }
+		});
 	}
 }
