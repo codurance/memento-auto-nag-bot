@@ -7,6 +7,11 @@ using SlackAPI.RPCMessages;
 
 namespace MementoNagBot.Services.Messaging;
 
+/// <summary>
+/// This service sends messages to Slack.
+/// If this fails, it won't throw, as we don't want to prevent other messages from being sent.
+/// A retry mechanism is planned: https://github.com/codurance/memento-auto-nag-bot/issues/22
+/// </summary>
 public class SlackMessageService
 {
 	private readonly ISlackClient _client;
