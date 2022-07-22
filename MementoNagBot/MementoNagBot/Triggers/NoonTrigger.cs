@@ -22,7 +22,7 @@ public class NoonTrigger
 	}
 	
 	[FunctionName("NoonTrigger")]
-	public async Task RunAsync([TimerTrigger("00 12 * * MON-FRI", RunOnStartup = true)] TimerInfo myTimer, ILogger log)
+	public async Task RunAsync([TimerTrigger("00 12 * * MON-FRI")] TimerInfo myTimer, ILogger log)
 	{
 		_logger.LogInformation("Function Run with Noon Trigger");
 		
