@@ -22,7 +22,7 @@ public class AfternoonTriggerTests
 				DateProviderStub dateProviderStub = new(new(2022, 08, 30));
 				StartGateService startGate = new(dateProviderStub, NullLogger<StartGateService>.Instance);
 				MementoReminderServiceStub reminderService = new();
-				TimerInfo ti = new(new CronSchedule(CrontabSchedule.Parse(NoonTrigger.ScheduleExpression)), new(), true);
+				TimerInfo ti = new(new CronSchedule(CrontabSchedule.Parse(AfternoonTrigger.ScheduleExpression)), new(), true);
 				
 				AfternoonTrigger trigger = new(startGate, reminderService, NullLogger<AfternoonTrigger>.Instance);
 				await trigger.RunAsync(ti, NullLogger.Instance);
