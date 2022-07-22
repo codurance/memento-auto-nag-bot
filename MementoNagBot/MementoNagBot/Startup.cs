@@ -29,8 +29,9 @@ public class Startup: FunctionsStartup
 		
 		builder.Services.AddLogging(l =>
 		{
-			LoggerConfiguration lc = new();
-			lc.WriteTo.Console();
+			LoggerConfiguration lc = new LoggerConfiguration()
+				.MinimumLevel.Debug()
+				.WriteTo.Console();
 			l.AddSerilog(lc.CreateLogger());
 		});
 
