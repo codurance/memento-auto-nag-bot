@@ -45,7 +45,7 @@ public class MementoReminderService
 		TranslatedResourceCompoundKey key = new(tomorrowIsLastDay ? TranslatedResource.GeneralReminderMonthEndTemplate : TranslatedResource.GeneralReminderTemplate, Language.English);
 		string message = _translatedResourceService.GetTranslatedString(key);
 		
-		await _messageService.SendMessageToBotChannel(message);
+		await _messageService.SendMessageToBotChannel($"@channel {message}");
 	}
 
 	public virtual async Task SendIndividualReminders(bool tomorrowIsLastDay)

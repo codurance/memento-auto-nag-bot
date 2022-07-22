@@ -30,11 +30,11 @@ public static class PollySetupExtensions
 				if (!context.TryGetLogger(out ILogger? logger)) return;
 				if (i < RetryDurations.Length)
 				{
-					logger.LogWarning("Failed to lookup Slack User ID from Email, will retry!\nRetry count: {RetryCount}", i);
+					logger?.LogWarning("Failed to lookup Slack User ID from Email, will retry!\nRetry count: {RetryCount}", i);
 				}
 				else
 				{
-					logger.LogError("Can't find Slack User ID from Email... Giving up!");
+					logger?.LogError("Can't find Slack User ID from Email... Giving up!");
 				}
 			});
 		
@@ -44,11 +44,11 @@ public static class PollySetupExtensions
 				if (!context.TryGetLogger(out ILogger? logger)) return;
 				if (i < RetryDurations.Length)
 				{
-					logger.LogWarning("Failed to send message to slack, will retry!\nRetry count: {RetryCount}", i);
+					logger?.LogWarning("Failed to send message to slack, will retry!\nRetry count: {RetryCount}", i);
 				}
 				else
 				{
-					logger.LogError("Can't send message to Slack... Giving up!");
+					logger?.LogError("Can't send message to Slack... Giving up!");
 				}
 			});
 		
@@ -59,11 +59,11 @@ public static class PollySetupExtensions
 				if (!context.TryGetLogger(out ILogger? logger)) return;
 				if (i < RetryDurations.Length)
 				{
-					logger.LogWarning("Memento connection failed\nRetry count: {RetryCount}", i);
+					logger?.LogWarning("Memento connection failed\nRetry count: {RetryCount}", i);
 				}
 				else
 				{
-					logger.LogError("Can't reach Memento... Giving up!");
+					logger?.LogError("Can't reach Memento... Giving up!");
 				}
 			});
 
