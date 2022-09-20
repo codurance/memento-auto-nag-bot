@@ -35,7 +35,7 @@ public class MementoReminderServiceTests
 
 				await service.SendGeneralReminder(true);
 
-				messageStub.LastBotChannelMessage.ShouldBe($"@channel {TranslationServiceStub.MonthEndReminderText}English");
+				messageStub.LastBotChannelMessage.ShouldBe($"<!channel> {TranslationServiceStub.MonthEndReminderText}English");
 			}
 		}
 
@@ -150,7 +150,7 @@ public class MementoReminderServiceTests
 
 				await service.SendGeneralReminder(false);
 
-				messageStub.LastBotChannelMessage.ShouldBe($"@channel {TranslationServiceStub.FridayReminderText}English");
+				messageStub.LastBotChannelMessage.ShouldBe($"<!channel> {TranslationServiceStub.FridayReminderText}English");
 			}
 			
 		}
