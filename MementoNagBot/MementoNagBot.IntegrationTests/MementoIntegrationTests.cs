@@ -6,7 +6,6 @@ using MementoNagBot.Models.Misc;
 // using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging;
 using Shouldly;
-using Xunit.Abstractions;
 
 namespace MementoNagBot.IntegrationTests;
 
@@ -16,13 +15,6 @@ public class MementoIntegrationTests
     private static readonly string MementoUrl =
         Environment.GetEnvironmentVariable("MEMENTO_URL")
         ?? throw new("You need to set the MEMENTO_URL in your env vars");
-
-    private readonly ITestOutputHelper _outputHelper;
-
-    public MementoIntegrationTests(ITestOutputHelper outputHelper)
-    {
-        _outputHelper = outputHelper;
-    }
 
     public class GivenIHaveAnAuthenticationKey
     {
