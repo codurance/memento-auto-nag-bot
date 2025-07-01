@@ -36,8 +36,8 @@ public class MementoClient: IMementoClient
 		HttpResponseMessage? res = await _retryPolicy.ExecuteAsync(_ => _client.GetAsync("users"), GetFreshContext());
 
 		var rawContent = await res.Content.ReadAsStringAsync();
-		var asJson = JsonNode.Parse(rawContent);
-		_logger.LogInformation("15th value: ", asJson[14].ToString());
+		var asJson = JsonDocument.Parse(rawContent);
+		_logger.LogInformation("15th value: ", asJson.RootElement[14].GetString());
 		_logger.LogInformation("Raw content from Memento: {RawContent}", rawContent);
 
 		List<MementoUser>? users = JsonSerializer.Deserialize<List<MementoUser>>(rawContent);
