@@ -33,6 +33,9 @@ public class MementoClient: IMementoClient
 
 		HttpResponseMessage? res = await _retryPolicy.ExecuteAsync(_ => _client.GetAsync("users"), GetFreshContext());
 
+		var rawContent = await res.Content.ReadFromJsonAsync<object>();
+		_logger.LogInformation("Raw content from Memento: {RawContent}", rawContent);
+
 		List<MementoUser>? users = await res.Content.ReadFromJsonAsync<List<MementoUser>>();
 		
 		
