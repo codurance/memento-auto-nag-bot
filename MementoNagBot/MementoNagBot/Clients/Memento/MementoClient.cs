@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text.Json;
 using MementoNagBot.Models.Memento;
 using MementoNagBot.Models.Misc;
 using Microsoft.Extensions.Logging;
@@ -33,11 +34,10 @@ public class MementoClient: IMementoClient
 
 		HttpResponseMessage? res = await _retryPolicy.ExecuteAsync(_ => _client.GetAsync("users"), GetFreshContext());
 
-		var rawContent = await res.Content.ReadFromJsonAsync<object>();
+		var rawContent = await res.Content.ReadAsStringAsync();
 		_logger.LogInformation("Raw content from Memento: {RawContent}", rawContent);
 
-		List<MementoUser>? users = await res.Content.ReadFromJsonAsync<List<MementoUser>>();
-		
+		List<MementoUser>? users = JsonSerializer.Deserialize<List<MementoUser>>(rawContent);
 		
 		if (users is null)
 		{
