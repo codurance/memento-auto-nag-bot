@@ -12,7 +12,7 @@ public class StaticTranslatedResourceService: ITranslatedResourceService
 
 	private readonly Dictionary<TranslatedResourceCompoundKey, string?> _resourceDictionary = new()
 	{
-		{new(TranslatedResource.GeneralReminderTemplate, Language.English), "Hi everyone, it's that time of week again, could you please make sure your Memento is up to date!"},
+		{new(TranslatedResource.GeneralReminderTemplate, Language.English), "Hi everyone, it's that time of week again, please make sure your Memento is up to date!"},
 		{new(TranslatedResource.GeneralReminderTemplate, Language.French), "Bonjour à tous, c'est encore ce moment de la semaine. Merci de vérifier si votre Memento est à jour!"},
 		{new(TranslatedResource.GeneralReminderTemplate, Language.Portuguese), "Olá a todos. Já chegou novamente *aquele* momento na semana. Por favor assegurem-se de actualizar o Memento!"},
 		{new(TranslatedResource.GeneralReminderTemplate, Language.Spanish), "Hola a todos. Ya ha llegado ese momento de la semana. ¿Puedes asegurarte de que Memento está actualizado?"},
