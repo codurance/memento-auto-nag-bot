@@ -1,21 +1,21 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <AzureFunctionsVersion>V4</AzureFunctionsVersion>
         <Nullable>enable</Nullable>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="JetBrains.Annotations" Version="2022.1.0" />
+        <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
         <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
-        <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.1.1" />
-        <PackageReference Include="Polly" Version="7.2.3" />
-        <PackageReference Include="Serilog" Version="2.11.0" />
-        <PackageReference Include="Serilog.Extensions.Logging" Version="3.1.0" />
-        <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
-        <PackageReference Include="SlackAPI" Version="1.1.13" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.2" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.2" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.2" />
+        <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.6.0" />
+        <PackageReference Include="Polly" Version="8.6.5" />
+        <PackageReference Include="Serilog" Version="4.3.0" />
+        <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
+        <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
+        <PackageReference Include="SlackAPI" Version="1.1.14" />
     </ItemGroup>
     <ItemGroup>
         <None Update="host.json">
