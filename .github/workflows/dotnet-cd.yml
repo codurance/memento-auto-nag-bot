@@ -40,7 +40,9 @@ jobs:
         shell: bash
         run: |
           pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+          rm -rf ./output
           dotnet build --configuration Release --output ./output
+          ls -R ./output
           popd
       - name: Push Function to Azure
         uses: Azure/functions-action@v1
