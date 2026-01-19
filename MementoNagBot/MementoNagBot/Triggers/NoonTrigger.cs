@@ -1,6 +1,8 @@
 using MementoNagBot.Models.Misc;
 using MementoNagBot.Services.Gating;
 using MementoNagBot.Services.Reminders;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 
@@ -20,27 +22,35 @@ public class NoonTrigger
 		_reminderService = reminderService;
 		_logger = logger;
 	}
-	
-	[Function("NoonTrigger")]
-	public async Task RunAsync([TimerTrigger(ScheduleExpression)] TimerInfo myTimer)
-	{
-		_logger.LogInformation("Function Run with Noon Trigger");
-		
-		CanRunResult canRunResult = _startGate.CanRun();
-		
-		switch (canRunResult)
-		{
-			case CanRunResult.CanRunTomorrowLastDay:
-				await _reminderService.SendGeneralReminder(true);
-				return;
-			case CanRunResult.CanRunFriday:
-				await _reminderService.SendGeneralReminder(false);
-				return;
-			case CanRunResult.CantRun:
-				return;
-			default:
-				throw new ArgumentOutOfRangeException();
-		}
-		
-	}
+
+    [Function("NoonTrigger")]
+    public Task RunAsync([TimerTrigger(ScheduleExpression)] TimerInfo myTimer) => RunInternal();
+
+    [Function("ManualNoonTrigger")]
+    public async Task<IActionResult> ManualRun([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
+    {
+        await RunInternal();
+        return new OkObjectResult("Noon Trigger executed manually");
+    }
+
+    private async Task RunInternal()
+    {
+        _logger.LogInformation("Function Run with Noon Trigger");
+
+        CanRunResult canRunResult = _startGate.CanRun();
+
+        switch (canRunResult)
+        {
+            case CanRunResult.CanRunTomorrowLastDay:
+                await _reminderService.SendGeneralReminder(true);
+                return;
+            case CanRunResult.CanRunFriday:
+                await _reminderService.SendGeneralReminder(false);
+                return;
+            case CanRunResult.CantRun:
+                return;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
 }

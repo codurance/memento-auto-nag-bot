@@ -30,9 +30,25 @@ public class NoonTriggerTests
 				reminderService.SentIndividualReminderFriday.ShouldBeFalse();
 				reminderService.SentIndividualReminderMonthEnd.ShouldBeFalse();
 			}
-		}
 
-		public class AndTodayIsFridayAndTodayIsNotMonthEnd
+            [Fact]
+            public async Task ThenSendGeneralReminderForMonthEndWhenRunManually()
+            {
+                DateProviderStub dateProviderStub = new(new(2022, 08, 30));
+                StartGateService startGate = new(dateProviderStub, NullLogger<StartGateService>.Instance);
+                MementoReminderServiceStub reminderService = new();
+
+                NoonTrigger trigger = new(startGate, reminderService, NullLogger<NoonTrigger>.Instance);
+                await trigger.ManualRun(null!);
+
+                reminderService.SentGeneralReminderMonthEnd.ShouldBeTrue();
+                reminderService.SentGeneralReminderFriday.ShouldBeFalse();
+                reminderService.SentIndividualReminderFriday.ShouldBeFalse();
+                reminderService.SentIndividualReminderMonthEnd.ShouldBeFalse();
+            }
+        }
+
+        public class AndTodayIsFridayAndTodayIsNotMonthEnd
 		{
 			[Fact]
 			public async Task ThenSendGeneralReminderForFriday()
