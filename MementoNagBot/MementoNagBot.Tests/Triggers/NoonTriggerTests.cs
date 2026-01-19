@@ -2,10 +2,8 @@ using System.Diagnostics.CodeAnalysis;
 using MementoNagBot.Services.Gating;
 using MementoNagBot.Tests.Stubs;
 using MementoNagBot.Triggers;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Timers;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging.Abstractions;
-using NCrontab;
 
 namespace MementoNagBot.Tests.Triggers;
 
@@ -22,19 +20,35 @@ public class NoonTriggerTests
 				DateProviderStub dateProviderStub = new(new(2022, 08, 30));
 				StartGateService startGate = new(dateProviderStub, NullLogger<StartGateService>.Instance);
 				MementoReminderServiceStub reminderService = new();
-				TimerInfo ti = new(new CronSchedule(CrontabSchedule.Parse(NoonTrigger.ScheduleExpression)), new(), true);
+				TimerInfo ti = new();
 				
 				NoonTrigger trigger = new(startGate, reminderService, NullLogger<NoonTrigger>.Instance);
-				await trigger.RunAsync(ti, NullLogger.Instance);
+				await trigger.RunAsync(ti);
 
 				reminderService.SentGeneralReminderMonthEnd.ShouldBeTrue();
 				reminderService.SentGeneralReminderFriday.ShouldBeFalse();
 				reminderService.SentIndividualReminderFriday.ShouldBeFalse();
 				reminderService.SentIndividualReminderMonthEnd.ShouldBeFalse();
 			}
-		}
 
-		public class AndTodayIsFridayAndTodayIsNotMonthEnd
+            [Fact]
+            public async Task ThenSendGeneralReminderForMonthEndWhenRunManually()
+            {
+                DateProviderStub dateProviderStub = new(new(2022, 08, 30));
+                StartGateService startGate = new(dateProviderStub, NullLogger<StartGateService>.Instance);
+                MementoReminderServiceStub reminderService = new();
+
+                NoonTrigger trigger = new(startGate, reminderService, NullLogger<NoonTrigger>.Instance);
+                await trigger.ManualRun(null!);
+
+                reminderService.SentGeneralReminderMonthEnd.ShouldBeTrue();
+                reminderService.SentGeneralReminderFriday.ShouldBeFalse();
+                reminderService.SentIndividualReminderFriday.ShouldBeFalse();
+                reminderService.SentIndividualReminderMonthEnd.ShouldBeFalse();
+            }
+        }
+
+        public class AndTodayIsFridayAndTodayIsNotMonthEnd
 		{
 			[Fact]
 			public async Task ThenSendGeneralReminderForFriday()
@@ -42,10 +56,10 @@ public class NoonTriggerTests
 				DateProviderStub dateProviderStub = new(new(2022, 07, 22));
 				StartGateService startGate = new(dateProviderStub, NullLogger<StartGateService>.Instance);
 				MementoReminderServiceStub reminderService = new();
-				TimerInfo ti = new(new CronSchedule(CrontabSchedule.Parse(NoonTrigger.ScheduleExpression)), new(), true);
+				TimerInfo ti = new();
 				
 				NoonTrigger trigger = new(startGate, reminderService, NullLogger<NoonTrigger>.Instance);
-				await trigger.RunAsync(ti, NullLogger.Instance);
+				await trigger.RunAsync(ti);
 
 				reminderService.SentGeneralReminderMonthEnd.ShouldBeFalse();
 				reminderService.SentGeneralReminderFriday.ShouldBeTrue();
@@ -62,10 +76,10 @@ public class NoonTriggerTests
 				DateProviderStub dateProviderStub = new(new(2022, 07, 20));
 				StartGateService startGate = new(dateProviderStub, NullLogger<StartGateService>.Instance);
 				MementoReminderServiceStub reminderService = new();
-				TimerInfo ti = new(new CronSchedule(CrontabSchedule.Parse(NoonTrigger.ScheduleExpression)), new(), true);
+				TimerInfo ti = new();
 				
 				NoonTrigger trigger = new(startGate, reminderService, NullLogger<NoonTrigger>.Instance);
-				await trigger.RunAsync(ti, NullLogger.Instance);
+				await trigger.RunAsync(ti);
 
 				reminderService.SentGeneralReminderMonthEnd.ShouldBeFalse();
 				reminderService.SentGeneralReminderFriday.ShouldBeFalse();
@@ -82,10 +96,10 @@ public class NoonTriggerTests
 				DateProviderStub dateProviderStub = new(new(2022, 07, 29));
 				StartGateService startGate = new(dateProviderStub, NullLogger<StartGateService>.Instance);
 				MementoReminderServiceStub reminderService = new();
-				TimerInfo ti = new(new CronSchedule(CrontabSchedule.Parse(NoonTrigger.ScheduleExpression)), new(), true);
+				TimerInfo ti = new();
 				
 				NoonTrigger trigger = new(startGate, reminderService, NullLogger<NoonTrigger>.Instance);
-				await trigger.RunAsync(ti, NullLogger.Instance);
+				await trigger.RunAsync(ti);
 
 				reminderService.SentGeneralReminderMonthEnd.ShouldBeFalse();
 				reminderService.SentGeneralReminderFriday.ShouldBeFalse();
