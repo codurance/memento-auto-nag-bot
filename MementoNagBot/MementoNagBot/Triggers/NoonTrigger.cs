@@ -1,7 +1,7 @@
 using MementoNagBot.Models.Misc;
 using MementoNagBot.Services.Gating;
 using MementoNagBot.Services.Reminders;
-using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 
 namespace MementoNagBot.Triggers;
@@ -21,8 +21,8 @@ public class NoonTrigger
 		_logger = logger;
 	}
 	
-	[FunctionName("NoonTrigger")]
-	public async Task RunAsync([TimerTrigger(ScheduleExpression)] TimerInfo myTimer, ILogger log)
+	[Function("NoonTrigger")]
+	public async Task RunAsync([TimerTrigger(ScheduleExpression)] TimerInfo myTimer)
 	{
 		_logger.LogInformation("Function Run with Noon Trigger");
 		
