@@ -26,6 +26,8 @@ jobs:
   deploy:
     name: Deploy to Azure
     needs: test
+    permissions:
+      id-token: write # Required for OIDC
     runs-on: ubuntu-latest
     env:
       AZURE_FUNCTIONAPP_PACKAGE_PATH: ./MementoNagBot/MementoNagBot
