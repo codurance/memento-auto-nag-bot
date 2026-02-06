@@ -25,7 +25,7 @@ public class MementoClient: IMementoClient
 	{
 		_logger.LogDebug("Fetching users from Memento...");
 
-		HttpResponseMessage? res = await _retryPolicy.ExecuteAsync(_ => _client.GetAsync("api/users"), GetFreshContext());
+		HttpResponseMessage? res = await _retryPolicy.ExecuteAsync(_ => _client.GetAsync("users"), GetFreshContext());
 
 		List<MementoUser>? users = await res.Content.ReadFromJsonAsync<List<MementoUser>>();
 
@@ -49,7 +49,7 @@ public class MementoClient: IMementoClient
 		query.Add("start", dateRange.StartDate.ToString("yyyy-MM-dd"));
 		query.Add("end", dateRange.EndDate.ToString("yyyy-MM-dd"));
 		string queryString = query.ToString() ?? string.Empty;
-		HttpResponseMessage? res = await _retryPolicy.ExecuteAsync(_ => _client.GetAsync($"api/user/{userId}/timeentries?{queryString}"), GetFreshContext());
+		HttpResponseMessage? res = await _retryPolicy.ExecuteAsync(_ => _client.GetAsync($"user/{userId}/timeentries?{queryString}"), GetFreshContext());
 		
 		List<MementoTimeEntry>? entries = await res.Content.ReadFromJsonAsync<List<MementoTimeEntry>>();
 		if (entries is null)

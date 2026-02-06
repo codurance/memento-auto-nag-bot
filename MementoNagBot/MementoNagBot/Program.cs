@@ -44,7 +44,10 @@ builder.Services
             MementoOptions? options = config.GetSection("Values:MementoOptions").Get<MementoOptions>();
             if (options != null)
             {
-                c.BaseAddress = new(options.MementoApiUrl);
+                string baseUrl = options.MementoApiUrl.TrimEnd('/');
+                if (!baseUrl.EndsWith("/api"))
+                    baseUrl += "/api";
+                c.BaseAddress = new(baseUrl + "/");
                 c.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", options.MementoApiToken);
             }
         });
