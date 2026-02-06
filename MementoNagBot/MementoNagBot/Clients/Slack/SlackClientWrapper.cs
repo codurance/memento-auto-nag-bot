@@ -1,54 +1,55 @@
 using System.Collections.Generic;
-using MementoNagBot.Models.Options;
+using System.Net.Http;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Registry;
 using Polly.Retry;
-using SlackAPI;
-using SlackAPI.RPCMessages;
 
 namespace MementoNagBot.Clients.Slack;
 
-public class SlackClientWrapper: ISlackClient
+public class SlackClientWrapper : ISlackClient
 {
 	private readonly ILogger<SlackClientWrapper> _logger;
-	private readonly SlackTaskClient _client;
-	private readonly AsyncRetryPolicy<UserEmailLookupResponse> _lookupRetryPolicy;
-	private readonly AsyncRetryPolicy<PostMessageResponse> _messageRetryPolicy;
+	private readonly HttpClient _httpClient;
+	private readonly AsyncRetryPolicy<SlackUserLookupResponse> _lookupRetryPolicy;
+	private readonly AsyncRetryPolicy<SlackPostMessageResponse> _messageRetryPolicy;
 
-
-	public SlackClientWrapper(IReadOnlyPolicyRegistry<string> policyRegistry, IOptions<SlackOptions> slackOptions, ILogger<SlackClientWrapper> logger)
+	public SlackClientWrapper(HttpClient httpClient, IReadOnlyPolicyRegistry<string> policyRegistry, ILogger<SlackClientWrapper> logger)
 	{
 		_logger = logger;
-		_client = new(slackOptions.Value.SlackApiToken);
+		_httpClient = httpClient;
 
-		_lookupRetryPolicy = policyRegistry.Get<AsyncRetryPolicy<UserEmailLookupResponse>>(nameof(ISlackClient.GetUserByEmailAsync));
-		_messageRetryPolicy = policyRegistry.Get<AsyncRetryPolicy<PostMessageResponse>>(nameof(ISlackClient.PostMessageAsync));
+		_lookupRetryPolicy = policyRegistry.Get<AsyncRetryPolicy<SlackUserLookupResponse>>(nameof(ISlackClient.GetUserByEmailAsync));
+		_messageRetryPolicy = policyRegistry.Get<AsyncRetryPolicy<SlackPostMessageResponse>>(nameof(ISlackClient.PostMessageAsync));
 	}
 
-
-	public Task<UserEmailLookupResponse> GetUserByEmailAsync(string email)
+	public Task<SlackUserLookupResponse> GetUserByEmailAsync(string email)
 	{
-
-		return _lookupRetryPolicy.ExecuteAsync(_ => _client.GetUserByEmailAsync(email), GetFreshContext());
+		return _lookupRetryPolicy.ExecuteAsync(_ => LookupByEmailAsync(email), GetFreshContext());
 	}
 
-	public Task<PostMessageResponse> PostMessageAsync(
-		string channelId,
-		string text,
-		string botName = null!,
-		string parse = null!,
-		bool linkNames = false,
-		IBlock[] blocks = null!,
-		Attachment[] attachments = null!,
-		bool? unfurlLinks = null,
-		string iconUrl = null!,
-		string iconEmoji = null!,
-		bool asUser = false,
-		string threadTs = null!)
-		=> _messageRetryPolicy.ExecuteAsync(_ => 
-			_client.PostMessageAsync(channelId, text, botName, parse, linkNames, blocks, attachments, unfurlLinks, iconUrl, iconEmoji, asUser, threadTs), GetFreshContext());
+	public Task<SlackPostMessageResponse> PostMessageAsync(string channelId, string text)
+	{
+		return _messageRetryPolicy.ExecuteAsync(_ => SendMessageAsync(channelId, text), GetFreshContext());
+	}
+
+	private async Task<SlackUserLookupResponse> LookupByEmailAsync(string email)
+	{
+		var content = new FormUrlEncodedContent(new[] { new KeyValuePair<string, string>("email", email) });
+		var response = await _httpClient.PostAsync("users.lookupByEmail", content);
+		var json = await response.Content.ReadAsStringAsync();
+		return JsonSerializer.Deserialize<SlackUserLookupResponse>(json) ?? new SlackUserLookupResponse();
+	}
+
+	private async Task<SlackPostMessageResponse> SendMessageAsync(string channelId, string text)
+	{
+		var payload = new { channel = channelId, text };
+		var content = new StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
+		var response = await _httpClient.PostAsync("chat.postMessage", content);
+		var json = await response.Content.ReadAsStringAsync();
+		return JsonSerializer.Deserialize<SlackPostMessageResponse>(json) ?? new SlackPostMessageResponse();
+	}
 
 	private Context GetFreshContext()
 	{

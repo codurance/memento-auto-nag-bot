@@ -28,7 +28,6 @@ builder.Services
     .AddTransient<SlackMessageService>()
     .AddTransient<StartGateService>()
     .AddTransient<MementoReminderService>()
-    .AddTransient<ISlackClient, SlackClientWrapper>()
     .AddTransient<IDateProvider, SystemDateProvider>()
     .AddTransient<ITranslatedResourceService, StaticTranslatedResourceService>()
     .RegisterPollyPolicies()
@@ -39,6 +38,18 @@ builder.Services
 				.WriteTo.Console();
 			l.AddSerilog(lc.CreateLogger());
 		})
+    .AddHttpClient<ISlackClient, SlackClientWrapper>(c =>
+        {
+            SlackOptions? slackOpts = config.GetSection("Values:SlackOptions").Get<SlackOptions>();
+            if (slackOpts != null)
+            {
+                c.BaseAddress = new("https://slack.com/api/");
+                c.DefaultRequestHeaders.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", slackOpts.SlackApiToken);
+            }
+        });
+
+builder.Services
     .AddHttpClient<IMementoClient, MementoClient>(c =>
         {
             MementoOptions? options = config.GetSection("Values:MementoOptions").Get<MementoOptions>();

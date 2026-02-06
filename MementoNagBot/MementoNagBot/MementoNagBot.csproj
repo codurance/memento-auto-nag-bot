@@ -24,8 +24,6 @@
         <PackageReference Include="Serilog" Version="4.3.0" />
         <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
         <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
-        <!-- ReSharper disable once VulnerablePackage -->
-        <PackageReference Include="SlackAPI" Version="1.1.14" />
     </ItemGroup>
     <ItemGroup>
         <None Update="host.json">

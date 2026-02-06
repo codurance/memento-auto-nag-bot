@@ -7,8 +7,6 @@ using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Registry;
 using Polly.Retry;
-using SlackAPI;
-using SlackAPI.RPCMessages;
 
 namespace MementoNagBot.Extensions.DependencyInjection;
 
@@ -24,7 +22,7 @@ public static class PollySetupExtensions
 
 	public static IReadOnlyPolicyRegistry<string> GetPolicyRegistry()
 	{
-		AsyncRetryPolicy<UserEmailLookupResponse>? lookupRetryPolicy = Policy.HandleResult<UserEmailLookupResponse>(r => !r.ok)
+		AsyncRetryPolicy<SlackUserLookupResponse>? lookupRetryPolicy = Policy.HandleResult<SlackUserLookupResponse>(r => !r.Ok)
 			.WaitAndRetryAsync(RetryDurations, (_, _, i, context) =>
 			{
 				if (!context.TryGetLogger(out ILogger? logger)) return;
@@ -37,8 +35,8 @@ public static class PollySetupExtensions
 					logger?.LogError("Can't find Slack User ID from Email... Giving up!");
 				}
 			});
-		
-		AsyncRetryPolicy<PostMessageResponse>? messageRetryPolicy = Policy.HandleResult<PostMessageResponse>(r => !r.ok)
+
+		AsyncRetryPolicy<SlackPostMessageResponse>? messageRetryPolicy = Policy.HandleResult<SlackPostMessageResponse>(r => !r.Ok)
 			.WaitAndRetryAsync(RetryDurations, (_, _, i, context) =>
 			{
 				if (!context.TryGetLogger(out ILogger? logger)) return;
@@ -51,7 +49,7 @@ public static class PollySetupExtensions
 					logger?.LogError("Can't send message to Slack... Giving up!");
 				}
 			});
-		
+
 		AsyncRetryPolicy<HttpResponseMessage>? mementoRetryPolicy = Policy.Handle<HttpRequestException>()
 			.OrResult<HttpResponseMessage>(r => !r.IsSuccessStatusCode)
 			.WaitAndRetryAsync(RetryDurations, (_, _, i, context) =>

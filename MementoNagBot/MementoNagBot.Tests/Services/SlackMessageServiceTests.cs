@@ -1,12 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
 using MementoNagBot.Clients.Slack;
-using MementoNagBot.Extensions.DependencyInjection;
 using MementoNagBot.Models.Options;
 using MementoNagBot.Services.Messaging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using SlackAPI;
-using SlackAPI.RPCMessages;
 
 namespace MementoNagBot.Tests.Services;
 
@@ -20,8 +17,9 @@ public class SlackMessageServiceTests
 			[Fact]
 			public async Task ThenItDoesNotThrow()
 			{
-				SlackOptions slackOptions = new() { SlackApiToken = "123123" };
-				ISlackClient slackClient = new SlackClientWrapper(PollySetupExtensions.GetPolicyRegistry(), Options.Create(slackOptions), NullLogger<SlackClientWrapper>.Instance);
+				ISlackClient slackClient = Substitute.For<ISlackClient>();
+				slackClient.PostMessageAsync(Arg.Any<string>(), Arg.Any<string>())
+					.Returns(new SlackPostMessageResponse { Ok = false, Error = "invalid_auth" });
 
 				BotOptions botOptions = new() { BotChannel = "#botspam" };
 				SlackMessageService messageService = new(slackClient, Options.Create(botOptions), NullLogger<SlackMessageService>.Instance);
@@ -29,23 +27,24 @@ public class SlackMessageServiceTests
 				await Should.NotThrowAsync(messageService.SendMessageToBotChannel("TestMessage"));
 			}
 		}
-		
+
 		public class WhenIAttemptToSendAMessageToAnIndividualUser
 		{
 			[Fact]
 			public async Task ThenItDoesNotThrow()
 			{
-				SlackOptions slackOptions = new() { SlackApiToken = "123123" };
-				ISlackClient slackClient = new SlackClientWrapper(PollySetupExtensions.GetPolicyRegistry(), Options.Create(slackOptions), NullLogger<SlackClientWrapper>.Instance);
+				ISlackClient slackClient = Substitute.For<ISlackClient>();
+				slackClient.GetUserByEmailAsync(Arg.Any<string>())
+					.Returns(new SlackUserLookupResponse { Ok = false, Error = "users_not_found" });
 
 				BotOptions botOptions = new() { BotChannel = "#botspam" };
 				SlackMessageService messageService = new(slackClient, Options.Create(botOptions), NullLogger<SlackMessageService>.Instance);
 
-				await Should.NotThrowAsync(messageService.SendDirectMessageToUser("fakeuser@fakedomain.com","TestMessage"));
+				await Should.NotThrowAsync(messageService.SendDirectMessageToUser("fakeuser@fakedomain.com", "TestMessage"));
 			}
 		}
 	}
-	
+
 	public class GivenICanConnectToSlack
 	{
 		public class WhenIAttemptToSendAMessageToTheBotChannel
@@ -53,9 +52,9 @@ public class SlackMessageServiceTests
 			[Fact]
 			public async Task ThenItDoesNotThrow()
 			{
-				PostMessageResponse messageResponse = new()
+				SlackPostMessageResponse messageResponse = new()
 				{
-					ok = true
+					Ok = true
 				};
 				ISlackClient slackClient = Substitute.For<ISlackClient>();
 				slackClient.PostMessageAsync(Arg.Any<string>(), Arg.Any<string>()).Returns(messageResponse);
@@ -70,10 +69,10 @@ public class SlackMessageServiceTests
 			public async Task ThenMessageIsPostedToSlack()
 			{
 				const string testMessage = "TestMessage";
-				
-				PostMessageResponse messageResponse = new()
+
+				SlackPostMessageResponse messageResponse = new()
 				{
-					ok = true
+					Ok = true
 				};
 				ISlackClient slackClient = Substitute.For<ISlackClient>();
 				slackClient.PostMessageAsync(Arg.Any<string>(), Arg.Any<string>()).Returns(messageResponse);
@@ -86,23 +85,28 @@ public class SlackMessageServiceTests
 				await slackClient.Received(1).PostMessageAsync(botOptions.BotChannel, testMessage);
 			}
 		}
-		
+
 		public class WhenIAttemptToSendAMessageToAnIndividualUser
 		{
 			[Fact]
 			public async Task ThenItDoesNotThrow()
 			{
-				PostMessageResponse messageResponse = new()
+				SlackPostMessageResponse messageResponse = new()
 				{
-					ok = true
+					Ok = true
 				};
 				ISlackClient slackClient = Substitute.For<ISlackClient>();
 				slackClient.PostMessageAsync(Arg.Any<string>(), Arg.Any<string>()).Returns(messageResponse);
+				slackClient.GetUserByEmailAsync(Arg.Any<string>()).Returns(new SlackUserLookupResponse
+				{
+					Ok = true,
+					User = new SlackUser { Id = "U123" }
+				});
 
 				BotOptions botOptions = new() { BotChannel = "#botspam" };
 				SlackMessageService messageService = new(slackClient, Options.Create(botOptions), NullLogger<SlackMessageService>.Instance);
 
-				await Should.NotThrowAsync(messageService.SendDirectMessageToUser("fake@user.com","TestMessage"));
+				await Should.NotThrowAsync(messageService.SendDirectMessageToUser("fake@user.com", "TestMessage"));
 			}
 
 			[Fact]
@@ -110,17 +114,17 @@ public class SlackMessageServiceTests
 			{
 				const string testMessage = "TestMessage";
 				const string userEmail = "fake@user.com";
-				
-				PostMessageResponse messageResponse = new()
+
+				SlackPostMessageResponse messageResponse = new()
 				{
-					ok = true
+					Ok = true
 				};
-				UserEmailLookupResponse userResponse = new()
+				SlackUserLookupResponse userResponse = new()
 				{
-					ok = true,
-					user = new()
+					Ok = true,
+					User = new SlackUser
 					{
-						id = userEmail
+						Id = userEmail
 					}
 				};
 				ISlackClient slackClient = Substitute.For<ISlackClient>();

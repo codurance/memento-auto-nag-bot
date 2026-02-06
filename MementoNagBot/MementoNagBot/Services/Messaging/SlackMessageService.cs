@@ -2,8 +2,6 @@ using MementoNagBot.Clients.Slack;
 using MementoNagBot.Models.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using SlackAPI;
-using SlackAPI.RPCMessages;
 
 namespace MementoNagBot.Services.Messaging;
 
@@ -24,19 +22,18 @@ public class SlackMessageService
 		_botOptions = botOptions;
 		_logger = logger;
 	}
-	
+
 	public virtual async Task SendMessageToBotChannel(string messageText)
 	{
 		_logger.LogInformation("Attempting to send {Message} to {Channel}", messageText, _botOptions.Value.BotChannel);
-		PostMessageResponse res = await _client.PostMessageAsync(_botOptions.Value.BotChannel, messageText);
-		if (res.ok)
+		SlackPostMessageResponse res = await _client.PostMessageAsync(_botOptions.Value.BotChannel, messageText);
+		if (res.Ok)
 		{
 			_logger.LogInformation("Successfully sent message to bot channel!");
 		}
 		else
 		{
-			_logger.LogWarning("Failed to send message to bot channel with {error}! mAttempting to continue...", res.error);
-			_logger.LogWarning("Details - error:{error}, message:{message}, channel:{channel}, ts:{ts}, provided:{provided}, needed:{needed}, response_metadata:{response_metadata}", res.error, res.message, res.channel, res.ts, res.provided, res.needed, res.response_metadata);
+			_logger.LogWarning("Failed to send message to bot channel with {error}! Attempting to continue...", res.Error);
 		}
 	}
 
@@ -46,11 +43,12 @@ public class SlackMessageService
 
 		try
 		{
-			UserEmailLookupResponse lookupResponse = await _client.GetUserByEmailAsync(userEmail);
-			lookupResponse.AssertOk();
-			User user = lookupResponse.user;
-			PostMessageResponse res = await _client.PostMessageAsync(user.id, message);
-			res.AssertOk();
+			SlackUserLookupResponse lookupResponse = await _client.GetUserByEmailAsync(userEmail);
+			if (!lookupResponse.Ok)
+				throw new InvalidOperationException($"Slack user lookup failed: {lookupResponse.Error}");
+			SlackPostMessageResponse res = await _client.PostMessageAsync(lookupResponse.User!.Id, message);
+			if (!res.Ok)
+				throw new InvalidOperationException($"Slack post message failed: {res.Error}");
 		}
 		catch (Exception)
 		{

@@ -1,23 +1,8 @@
-using SlackAPI;
-using SlackAPI.RPCMessages;
-
 namespace MementoNagBot.Clients.Slack;
 
 public interface ISlackClient
 {
-	public Task<UserEmailLookupResponse> GetUserByEmailAsync(string email);
-	
-	public Task<PostMessageResponse> PostMessageAsync(
-		string channelId,
-		string text,
-		string botName = null!,
-		string parse = null!,
-		bool linkNames = false,
-		IBlock[] blocks = null!,
-		Attachment[] attachments = null!,
-		bool? unfurlLinks = null,
-		string iconUrl = null!,
-		string iconEmoji = null!,
-		bool asUser = false,
-		string threadTs = null!);
+	public Task<SlackUserLookupResponse> GetUserByEmailAsync(string email);
+
+	public Task<SlackPostMessageResponse> PostMessageAsync(string channelId, string text);
 }
