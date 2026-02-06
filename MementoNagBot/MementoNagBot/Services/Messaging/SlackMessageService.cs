@@ -35,7 +35,8 @@ public class SlackMessageService
 		}
 		else
 		{
-			_logger.LogWarning("Failed to send {message} to bot channel with {error}! mAttempting to continue...", res.message, res.error);
+			_logger.LogWarning("Failed to send message to bot channel with {error}! mAttempting to continue...", res.error);
+			_logger.LogWarning("Details - error:{error}, message:{message}, channel:{channel}, ts:{ts}, provided:{provided}, needed:{needed}, response_metadata:{response_metadata}", res.error, res.message, res.channel, res.ts, res.provided, res.needed, res.response_metadata);
 		}
 	}
 
