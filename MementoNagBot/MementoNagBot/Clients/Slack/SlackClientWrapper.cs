@@ -36,19 +36,33 @@ public class SlackClientWrapper : ISlackClient
 
 	private async Task<SlackUserLookupResponse> LookupByEmailAsync(string email)
 	{
+		_logger.LogInformation("Slack users.lookupByEmail: looking up {Email}", email);
 		var content = new FormUrlEncodedContent(new[] { new KeyValuePair<string, string>("email", email) });
 		var response = await _httpClient.PostAsync("users.lookupByEmail", content);
 		var json = await response.Content.ReadAsStringAsync();
-		return JsonSerializer.Deserialize<SlackUserLookupResponse>(json) ?? new SlackUserLookupResponse();
+		_logger.LogInformation("Slack users.lookupByEmail: HTTP {StatusCode}", (int)response.StatusCode);
+		var result = JsonSerializer.Deserialize<SlackUserLookupResponse>(json) ?? new SlackUserLookupResponse();
+		if (result.Ok)
+			_logger.LogInformation("Slack users.lookupByEmail: resolved {Email} to user {UserId}", email, result.User?.Id);
+		else
+			_logger.LogInformation("Slack users.lookupByEmail: failed for {Email} with error {SlackError}", email, result.Error);
+		return result;
 	}
 
 	private async Task<SlackPostMessageResponse> SendMessageAsync(string channelId, string text)
 	{
+		_logger.LogInformation("Slack chat.postMessage: sending to {Channel}", channelId);
 		var payload = new { channel = channelId, text };
 		var content = new StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
 		var response = await _httpClient.PostAsync("chat.postMessage", content);
 		var json = await response.Content.ReadAsStringAsync();
-		return JsonSerializer.Deserialize<SlackPostMessageResponse>(json) ?? new SlackPostMessageResponse();
+		_logger.LogInformation("Slack chat.postMessage: HTTP {StatusCode}", (int)response.StatusCode);
+		var result = JsonSerializer.Deserialize<SlackPostMessageResponse>(json) ?? new SlackPostMessageResponse();
+		if (result.Ok)
+			_logger.LogInformation("Slack chat.postMessage: sent to {Channel}", channelId);
+		else
+			_logger.LogInformation("Slack chat.postMessage: failed for {Channel} with error {SlackError}", channelId, result.Error);
+		return result;
 	}
 
 	private Context GetFreshContext()
