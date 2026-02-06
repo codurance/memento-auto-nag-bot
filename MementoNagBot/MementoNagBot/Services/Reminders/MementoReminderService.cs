@@ -80,7 +80,7 @@ public class MementoReminderService
 			TranslatedResourceCompoundKey key = new(tomorrowIsLastDay ? TranslatedResource.IndividualReminderMonthEndTemplate : TranslatedResource.IndividualReminderTemplate, language);
 			
 			string template = _translatedResourceService.GetTranslatedString(key);
-			string message = string.Format(template, user.Name.Split(' ')[0]);
+			string message = template.Replace("{Person}", user.Name.Split(' ')[0]);
 			await _messageService.SendDirectMessageToUser(user.Email, message);
 		}
 	}
