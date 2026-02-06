@@ -27,15 +27,15 @@ public class SlackMessageService
 	
 	public virtual async Task SendMessageToBotChannel(string messageText)
 	{
-		_logger.LogDebug("Attempting to send {Message} to {Channel}", messageText, _botOptions.Value.BotChannel);
+		_logger.LogInformation("Attempting to send {Message} to {Channel}", messageText, _botOptions.Value.BotChannel);
 		PostMessageResponse res = await _client.PostMessageAsync(_botOptions.Value.BotChannel, messageText);
 		if (res.ok)
 		{
-			_logger.LogDebug("Successfully sent message to bot channel!");
+			_logger.LogInformation("Successfully sent message to bot channel!");
 		}
 		else
 		{
-			_logger.LogWarning("Failed to send message to bot channel with {error}! Attempting to continue...", res.error);
+			_logger.LogWarning("Failed to send message to bot channel with {error}! mAttempting to continue...", res.error);
 		}
 	}
 
