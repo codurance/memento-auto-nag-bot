@@ -10,7 +10,7 @@ namespace MementoNagBot.Triggers;
 
 public class NoonTrigger
 {
-	public const string ScheduleExpression = "0 12 * * MON-FRI";
+	private const string ScheduleExpression = "0 12 * * MON-FRI";
 	
 	private readonly StartGateService _startGate;
 	private readonly MementoReminderService _reminderService;
