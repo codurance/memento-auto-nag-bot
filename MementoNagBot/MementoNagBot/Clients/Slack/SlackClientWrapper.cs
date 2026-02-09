@@ -45,7 +45,7 @@ public class SlackClientWrapper : ISlackClient
 		if (result.Ok)
 			_logger.LogInformation("Slack users.lookupByEmail: resolved {Email} to user {UserId}", email, result.User?.Id);
 		else
-			_logger.LogInformation("Slack users.lookupByEmail: failed for {Email} with error {SlackError}", email, result.Error);
+			_logger.LogWarning("Slack users.lookupByEmail: failed for {Email} with error {SlackError}", email, result.Error);
 		return result;
 	}
 
@@ -61,7 +61,7 @@ public class SlackClientWrapper : ISlackClient
 		if (result.Ok)
 			_logger.LogInformation("Slack chat.postMessage: sent to {Channel}", channelId);
 		else
-			_logger.LogInformation("Slack chat.postMessage: failed for {Channel} with error {SlackError}", channelId, result.Error);
+			_logger.LogWarning("Slack chat.postMessage: failed for {Channel} with error {SlackError}", channelId, result.Error);
 		return result;
 	}
 

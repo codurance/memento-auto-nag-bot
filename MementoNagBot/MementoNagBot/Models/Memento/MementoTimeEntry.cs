@@ -17,5 +17,6 @@ public record MementoTimeEntry
 	DateOnly Start,
 	[property: JsonConverter(typeof(DateOnlyConverter))]
 	DateOnly ActivityDate,
+	[property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
 	int Hours
 );
