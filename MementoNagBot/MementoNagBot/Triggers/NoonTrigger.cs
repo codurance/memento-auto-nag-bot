@@ -29,7 +29,8 @@ public class NoonTrigger
     [Function("ManualNoonTrigger")]
     public async Task<IActionResult> ManualRun([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
     {
-        await RunInternal();
+        _logger.LogInformation("Function Run with Manual Trigger");
+        await _reminderService.SendGeneralReminder(false);
         return new OkObjectResult("Noon Trigger executed manually");
     }
 
